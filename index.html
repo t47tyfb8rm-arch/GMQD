@@ -290,6 +290,49 @@
             font-weight: 500;
             margin-top: 4px;
         }
+        .product-card .card-body .payment-row {
+            margin-top: 6px;
+        }
+        .payment-type {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: #fff0f6;
+            color: #ff4fa8;
+            font-size: 10px;
+            line-height: 1.5;
+            white-space: nowrap;
+        }
+        .payment-type.deposit {
+            background: #fff7d9;
+            color: #b27800;
+        }
+        .payment-type.balance {
+            background: #eaf2ff;
+            color: #2f63c7;
+        }
+        .payment-type.shipping {
+            background: #ebf8ef;
+            color: #24844d;
+        }
+        body.dark .payment-type {
+            background: #382332;
+            color: #ff8bc8;
+        }
+        body.dark .payment-type.deposit {
+            background: #3a3017;
+            color: #f0c85a;
+        }
+        body.dark .payment-type.balance {
+            background: #1d2a42;
+            color: #8fb5ff;
+        }
+        body.dark .payment-type.shipping {
+            background: #1d3527;
+            color: #77d596;
+        }
         .product-card .card-body .meta {
             display: flex;
             justify-content: space-between;
@@ -843,7 +886,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260724-db-size-payment-type';
+    const APP_VERSION = '20260724-db-payment-badge';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -924,16 +967,19 @@
                     ${r.status ? `<div class="tag">${r.status}</div>` : ''}
                     <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
                 </div>
-                <div class="card-body">
-                    <div class="name">${escapeHtml(r.name)}</div>
-                    <div class="price">¥${r.price.toFixed(2)}</div>
-                    <div class="meta">
-                        <span class="status">${escapeHtml(r.brand || r.platform || '其他')}</span>
-                        <span class="qty">${escapeHtml(r.paymentType || '正常')} ×${r.quantity}</span>
+                    <div class="card-body">
+                        <div class="name">${escapeHtml(r.name)}</div>
+                        <div class="price">¥${r.price.toFixed(2)}</div>
+                        <div class="payment-row">
+                            <span class="payment-type ${paymentTypeClass(r.paymentType)}">${escapeHtml(r.paymentType || '正常')}</span>
+                        </div>
+                        <div class="meta">
+                            <span class="status">${escapeHtml(r.brand || r.platform || '其他')}</span>
+                            <span class="qty">×${r.quantity}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
 
         updateStats();
     }
@@ -942,6 +988,13 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    function paymentTypeClass(type) {
+        if (type === '定金') return 'deposit';
+        if (type === '尾款') return 'balance';
+        if (type === '运费') return 'shipping';
+        return 'normal';
     }
 
     // ===== 标签切换 =====
