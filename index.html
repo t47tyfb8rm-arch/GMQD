@@ -456,13 +456,13 @@
             color: #f3edf2;
         }
         .form-group {
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
         .form-group label {
             display: block;
             font-size: 12px;
             color: #999;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         .form-group input,
         .form-group select,
@@ -493,7 +493,7 @@
         }
         .form-group textarea {
             resize: vertical;
-            min-height: 38px;
+            min-height: 42px;
         }
         .form-row {
             display: grid;
@@ -512,7 +512,7 @@
             margin-bottom: 3px;
         }
         .form-row .form-group {
-            margin-bottom: 8px;
+            margin-bottom: 7px;
             min-width: 0;
         }
         .form-row.two-col .form-group input {
@@ -666,13 +666,13 @@
         }
         .image-uploader {
             display: grid;
-            grid-template-columns: 60px 1fr;
-            gap: 10px;
+            grid-template-columns: 54px 1fr;
+            gap: 9px;
             align-items: center;
         }
         .image-preview {
-            width: 60px;
-            height: 60px;
+            width: 54px;
+            height: 54px;
             border-radius: 8px;
             background: #f5f5f5;
             border: 1px dashed #e7cbd9;
@@ -724,17 +724,68 @@
         .modal-footer {
             display: flex;
             gap: 10px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
         .modal-footer button {
             flex: 1;
-            padding: 9px;
+            padding: 10px;
             border: none;
             border-radius: 8px;
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
             transition: opacity 0.2s;
+        }
+
+        .form-modal-content {
+            max-height: calc(100dvh - 28px);
+            padding: 14px 16px 16px;
+        }
+        .form-modal-content .modal-header {
+            margin-bottom: 6px;
+        }
+        .form-modal-content .modal-header h3 {
+            font-size: 20px;
+        }
+        .form-modal-content .modal-header .close-btn {
+            width: 26px;
+            height: 26px;
+            font-size: 15px;
+        }
+        .form-modal-content .form-group input,
+        .form-modal-content .form-group select,
+        .form-modal-content .form-group textarea {
+            min-height: 38px;
+            padding: 7px 10px;
+            font-size: 13px;
+        }
+        .form-modal-content .form-row.two-col .form-group input {
+            height: 40px;
+        }
+        .form-modal-content .item-row {
+            grid-template-columns: 1fr 0.72fr 1.12fr;
+        }
+        .form-modal-content .item-row .form-group input {
+            height: 40px;
+        }
+        .form-modal-content .payment-summary-box {
+            min-height: 40px;
+            padding: 6px 9px;
+        }
+        .form-modal-content .payment-summary-box button {
+            padding: 7px 11px;
+        }
+        .form-modal-content .radio-group {
+            gap: 6px;
+        }
+        .form-modal-content .form-group .radio-group label {
+            padding: 4px 9px;
+            font-size: 12px;
+        }
+        .form-modal-content textarea#formNote {
+            min-height: 42px;
+            height: 42px;
+            resize: none;
         }
         .modal-footer button:hover {
             opacity: 0.85;
@@ -907,8 +958,8 @@
                 padding: 14px;
             }
             .modal-content {
-                max-height: 88vh;
-                padding: 16px 16px 18px;
+                max-height: calc(100dvh - 28px);
+                padding: 14px;
                 border-radius: 20px;
             }
             .modal-content .modal-header h3 {
@@ -929,15 +980,92 @@
             }
             .form-row.two-col {
                 grid-template-columns: 1fr 1fr;
-                column-gap: 10px;
+                column-gap: 8px;
                 row-gap: 0;
             }
             .form-row.two-col .form-group input {
+                height: 38px;
+            }
+            .form-modal-content {
+                width: min(100%, 380px);
+                padding: 12px 12px 14px;
+            }
+            .form-modal-content .modal-header {
+                margin-bottom: 4px;
+            }
+            .form-modal-content .modal-header h3 {
+                font-size: 18px;
+            }
+            .form-modal-content .form-group {
+                margin-bottom: 5px;
+            }
+            .form-modal-content .form-group label,
+            .form-modal-content .form-row label {
+                font-size: 11px;
+            }
+            .form-modal-content .image-uploader {
+                grid-template-columns: 44px 1fr;
+                gap: 8px;
+            }
+            .form-modal-content .image-preview {
+                width: 44px;
                 height: 44px;
+                border-radius: 8px;
+                font-size: 18px;
+            }
+            .form-modal-content .image-actions {
+                gap: 6px;
+            }
+            .form-modal-content .image-actions button,
+            .form-modal-content .image-actions label {
+                padding: 6px 9px;
+                font-size: 11px;
+            }
+            .form-modal-content .form-group input,
+            .form-modal-content .form-group select,
+            .form-modal-content .form-group textarea {
+                min-height: 36px;
+                height: 36px;
+                padding: 6px 9px;
+                font-size: 13px;
+                border-radius: 10px;
+            }
+            .form-modal-content .item-row {
+                grid-template-columns: 1fr 0.68fr 1.1fr;
+                column-gap: 8px;
             }
             .payment-editor-row {
                 grid-template-columns: 84px minmax(0, 1fr) 34px;
                 gap: 8px;
+            }
+            .form-modal-content .payment-summary-box {
+                min-height: 38px;
+                padding: 5px 8px;
+            }
+            .form-modal-content .payment-summary-text {
+                font-size: 12px;
+            }
+            .form-modal-content .payment-summary-box button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            .form-modal-content .form-group .radio-group {
+                gap: 5px;
+            }
+            .form-modal-content .form-group .radio-group label {
+                padding: 3px 8px;
+                font-size: 12px;
+            }
+            .form-modal-content textarea#formNote {
+                min-height: 38px;
+                height: 38px;
+            }
+            .form-modal-content .modal-footer {
+                margin-top: 5px;
+            }
+            .form-modal-content .modal-footer button {
+                padding: 9px;
+                font-size: 14px;
             }
             .modal-content.detail-modal {
                 max-height: 86vh;
@@ -1003,7 +1131,7 @@
 
 <!-- ===== 新增/编辑弹窗 ===== -->
 <div class="modal-overlay" id="formModal">
-    <div class="modal-content">
+    <div class="modal-content form-modal-content">
         <div class="modal-header">
             <h3 id="formModalTitle">新增记录</h3>
             <button class="close-btn" onclick="closeFormModal()">✕</button>
@@ -1137,7 +1265,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-centered-modals';
+    const APP_VERSION = '20260725-compact-form-modal';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -1298,6 +1426,7 @@
         document.getElementById('formDate').value = new Date().toISOString().slice(0, 10);
         document.getElementById('formNote').value = '';
         document.getElementById('formModal').classList.add('active');
+        resetFormModalScroll();
     }
 
     function openEditModal(id) {
@@ -1324,10 +1453,16 @@
         document.getElementById('formDate').value = r.date || '';
         document.getElementById('formNote').value = r.note || '';
         document.getElementById('formModal').classList.add('active');
+        resetFormModalScroll();
     }
 
     function closeFormModal() {
         document.getElementById('formModal').classList.remove('active');
+    }
+
+    function resetFormModalScroll() {
+        const content = document.querySelector('#formModal .modal-content');
+        if (content) content.scrollTop = 0;
     }
 
     function getBrandValue() {
