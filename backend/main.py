@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,7 @@ class RecordIn(BaseModel):
     depositAmount: float = 0
     balanceAmount: float = 0
     shippingAmount: float = 0
+    paymentItems: list[dict[str, Any]] = Field(default_factory=list)
     quantity: int = 1
     status: str = Field(default="待付款", max_length=40)
     date: str = Field(default="", max_length=40)
@@ -66,6 +68,7 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
         "depositAmount": deposit_amount,
         "balanceAmount": balance_amount,
         "shippingAmount": shipping_amount,
+        "paymentItems": json.loads(row["payment_details"] or "[]"),
         "totalAmount": total_amount,
         "quantity": row["quantity"] or 1,
         "status": row["status"] or "待付款",
@@ -100,6 +103,7 @@ def init_db() -> None:
                 deposit_amount REAL DEFAULT 0,
                 balance_amount REAL DEFAULT 0,
                 shipping_amount REAL DEFAULT 0,
+                payment_details TEXT DEFAULT '[]',
                 quantity INTEGER DEFAULT 1,
                 status TEXT DEFAULT '待付款',
                 purchase_date TEXT DEFAULT '',
@@ -121,6 +125,8 @@ def init_db() -> None:
             conn.execute("ALTER TABLE records ADD COLUMN balance_amount REAL DEFAULT 0")
         if "shipping_amount" not in columns:
             conn.execute("ALTER TABLE records ADD COLUMN shipping_amount REAL DEFAULT 0")
+        if "payment_details" not in columns:
+            conn.execute("ALTER TABLE records ADD COLUMN payment_details TEXT DEFAULT '[]'")
         count = conn.execute("SELECT COUNT(*) AS count FROM records").fetchone()["count"]
         if count == 0:
             defaults = [
@@ -137,8 +143,8 @@ def init_db() -> None:
             conn.executemany(
                 """
                 INSERT INTO records
-                    (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-                VALUES (?, ?, ?, ?, '正常', 0, ?, 0, 0, 0, ?, ?, ?, ?, '', ?, ?)
+                    (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+                VALUES (?, ?, ?, ?, '正常', 0, ?, 0, 0, 0, '[]', ?, ?, ?, ?, '', ?, ?)
                 """,
                 [(*item, ts, ts) for item in defaults],
             )
@@ -174,8 +180,8 @@ def create_record(record: RecordIn) -> dict[str, Any]:
     record_id = execute_write(
         """
         INSERT INTO records
-            (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             record.name.strip(),
@@ -188,6 +194,7 @@ def create_record(record: RecordIn) -> dict[str, Any]:
             record.depositAmount,
             record.balanceAmount,
             record.shippingAmount,
+            json.dumps(record.paymentItems, ensure_ascii=False),
             record.quantity,
             record.status,
             record.date,
@@ -220,7 +227,7 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
             """
             UPDATE records
             SET name = ?, brand = ?, platform = ?, order_no = ?, payment_type = ?, has_shipping = ?,
-                price = ?, deposit_amount = ?, balance_amount = ?, shipping_amount = ?, quantity = ?,
+                price = ?, deposit_amount = ?, balance_amount = ?, shipping_amount = ?, payment_details = ?, quantity = ?,
                 status = ?, purchase_date = ?, note = ?, image_data = ?, updated_at = ?
             WHERE id = ?
             """,
@@ -235,6 +242,7 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
                 record.depositAmount,
                 record.balanceAmount,
                 record.shippingAmount,
+                json.dumps(record.paymentItems, ensure_ascii=False),
                 record.quantity,
                 record.status,
                 record.date,
@@ -267,8 +275,8 @@ def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
         conn.executemany(
             """
             INSERT INTO records
-                (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -282,6 +290,7 @@ def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
                     item.depositAmount,
                     item.balanceAmount,
                     item.shippingAmount,
+                    json.dumps(item.paymentItems, ensure_ascii=False),
                     item.quantity,
                     item.status,
                     item.date,
