@@ -72,24 +72,8 @@
             align-items: center;
             gap: 8px;
         }
-        .nav-bar .left .back-btn {
-            font-size: 20px;
-            cursor: pointer;
-            color: #333;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
-        body.dark .nav-bar .left .back-btn,
         body.dark .nav-bar .right .action-btn {
             color: #f3edf2;
-        }
-        .nav-bar .left .back-btn:hover {
-            background: #f0e0e0;
         }
         .nav-bar .logo {
             display: flex;
@@ -753,7 +737,6 @@
 <!-- ===== 导航栏 ===== -->
 <div class="nav-bar">
     <div class="left">
-        <span class="back-btn" onclick="history.back()">←</span>
         <div class="logo">
             <span class="logo-icon">购</span>
             <span class="logo-text">购物清单</span>
@@ -901,7 +884,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260724-db-detail-actions';
+    const APP_VERSION = '20260724-db-no-back-arrow';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
