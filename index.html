@@ -475,6 +475,30 @@
             resize: vertical;
             min-height: 60px;
         }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1.1fr 0.8fr 1fr;
+            gap: 10px;
+            align-items: start;
+        }
+        .form-row .form-group {
+            margin-bottom: 14px;
+        }
+        .checkbox-line {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            color: #666;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .checkbox-line input {
+            width: auto;
+        }
+        body.dark .checkbox-line {
+            color: #d8cbd3;
+        }
         .form-group .radio-group {
             display: flex;
             flex-wrap: wrap;
@@ -731,6 +755,10 @@
             .header-info .title {
                 font-size: 20px;
             }
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
         }
         @media (min-width: 600px) {
             .product-grid {
@@ -763,7 +791,6 @@
     <div class="tab-item" data-status="待发货">待发货</div>
     <div class="tab-item" data-status="已发货">已发货</div>
     <div class="tab-item" data-status="已收货">已收货</div>
-    <div class="tab-item" data-status="已取消">已取消</div>
 </div>
 
 <!-- ===== 商品网格 ===== -->
@@ -818,13 +845,19 @@
                 <label>购买平台</label>
                 <input type="text" id="formPlatform" placeholder="如：淘宝、京东">
             </div>
-            <div class="form-group">
-                <label>尺码</label>
-                <input type="text" id="formOrderNo" placeholder="如：M、L、娃衣尺寸">
-            </div>
-            <div class="form-group">
-                <label>单价 (¥)</label>
-                <input type="number" id="formPrice" step="0.01" min="0" required placeholder="0.00">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>尺码</label>
+                    <input type="text" id="formOrderNo" placeholder="如：M、L">
+                </div>
+                <div class="form-group">
+                    <label>数量</label>
+                    <input type="number" id="formQuantity" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>金额 (¥)</label>
+                    <input type="number" id="formPrice" step="0.01" min="0" required placeholder="0.00">
+                </div>
             </div>
             <div class="form-group">
                 <label>付款分类</label>
@@ -832,12 +865,8 @@
                     <label><input type="radio" name="formPaymentType" value="正常" checked><span>正常</span></label>
                     <label><input type="radio" name="formPaymentType" value="定金"><span>定金</span></label>
                     <label><input type="radio" name="formPaymentType" value="尾款"><span>尾款</span></label>
-                    <label><input type="radio" name="formPaymentType" value="运费"><span>运费</span></label>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>数量</label>
-                <input type="number" id="formQuantity" min="1" value="1" required>
+                <label class="checkbox-line"><input type="checkbox" id="formHasShipping"> 包含运费</label>
             </div>
             <div class="form-group">
                 <label>状态</label>
@@ -847,7 +876,6 @@
                     <label><input type="radio" name="formStatus" value="待发货"><span>待发货</span></label>
                     <label><input type="radio" name="formStatus" value="已发货"><span>已发货</span></label>
                     <label><input type="radio" name="formStatus" value="已收货"><span>已收货</span></label>
-                    <label><input type="radio" name="formStatus" value="已取消"><span>已取消</span></label>
                 </div>
             </div>
             <div class="form-group">
@@ -886,7 +914,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260724-db-payment-badge';
+    const APP_VERSION = '20260725-db-payment-shipping';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -945,7 +973,7 @@
 
     function updateStats() {
         const total = records.length;
-        const totalPrice = records.reduce((s, r) => s + r.price * r.quantity, 0);
+        const totalPrice = records.reduce((s, r) => s + Number(r.price || 0), 0);
         document.getElementById('totalCount').textContent = `已收录 ${total}`;
         document.getElementById('totalPrice').textContent = `总价 ¥${totalPrice.toFixed(2)}`;
     }
@@ -971,10 +999,10 @@
                         <div class="name">${escapeHtml(r.name)}</div>
                         <div class="price">¥${r.price.toFixed(2)}</div>
                         <div class="payment-row">
-                            <span class="payment-type ${paymentTypeClass(r.paymentType)}">${escapeHtml(r.paymentType || '正常')}</span>
+                            <span class="payment-type ${paymentTypeClass(r)}">${escapeHtml(paymentLabel(r))}</span>
                         </div>
                         <div class="meta">
-                            <span class="status">${escapeHtml(r.brand || r.platform || '其他')}</span>
+                            <span class="status">${escapeHtml(r.orderNo || '未填尺码')}</span>
                             <span class="qty">×${r.quantity}</span>
                         </div>
                     </div>
@@ -990,10 +1018,16 @@
         return div.innerHTML;
     }
 
-    function paymentTypeClass(type) {
+    function paymentLabel(record) {
+        const type = record.paymentType || '正常';
+        return record.hasShipping ? `${type}+运费` : type;
+    }
+
+    function paymentTypeClass(record) {
+        const type = record.paymentType || '正常';
+        if (record.hasShipping) return 'shipping';
         if (type === '定金') return 'deposit';
         if (type === '尾款') return 'balance';
-        if (type === '运费') return 'shipping';
         return 'normal';
     }
 
@@ -1021,6 +1055,7 @@
         document.getElementById('formPrice').value = '';
         document.getElementById('formQuantity').value = '1';
         document.querySelector('input[name="formPaymentType"][value="正常"]').checked = true;
+        document.getElementById('formHasShipping').checked = false;
         document.querySelector('input[name="formStatus"][value="待付款"]').checked = true;
         document.getElementById('formDate').value = new Date().toISOString().slice(0, 10);
         document.getElementById('formNote').value = '';
@@ -1038,8 +1073,10 @@
         document.getElementById('formOrderNo').value = r.orderNo || '';
         document.getElementById('formPrice').value = r.price;
         document.getElementById('formQuantity').value = r.quantity;
-        const paymentTypeInput = document.querySelector(`input[name="formPaymentType"][value="${r.paymentType || '正常'}"]`);
+        const normalizedPaymentType = r.paymentType === '运费' ? '正常' : (r.paymentType || '正常');
+        const paymentTypeInput = document.querySelector(`input[name="formPaymentType"][value="${normalizedPaymentType}"]`);
         if (paymentTypeInput) paymentTypeInput.checked = true;
+        document.getElementById('formHasShipping').checked = !!r.hasShipping || r.paymentType === '运费';
         const statusInput = document.querySelector(`input[name="formStatus"][value="${r.status}"]`);
         if (statusInput) statusInput.checked = true;
         document.getElementById('formImageData').value = r.imageData || '';
@@ -1123,6 +1160,7 @@
             platform: document.getElementById('formPlatform').value.trim(),
             orderNo: document.getElementById('formOrderNo').value.trim(),
             paymentType: document.querySelector('input[name="formPaymentType"]:checked').value,
+            hasShipping: document.getElementById('formHasShipping').checked,
             price: parseFloat(document.getElementById('formPrice').value) || 0,
             quantity: parseInt(document.getElementById('formQuantity').value) || 1,
             status: document.querySelector('input[name="formStatus"]:checked').value,
@@ -1172,8 +1210,8 @@
             <li><span class="icon">N</span><span class="label">数量</span><span class="value">${r.quantity}</span></li>
             <li><span class="icon">📏</span><span class="label">尺码</span><span class="value">${escapeHtml(r.orderNo || '—')}</span></li>
             <li><span class="icon">♥</span><span class="label">拥有状态</span><span class="value">${r.status}</span></li>
-            <li><span class="icon">票</span><span class="label">付款分类</span><span class="value">${escapeHtml(r.paymentType || '正常')}</span></li>
-            <li><span class="icon">¥</span><span class="label">单价</span><span class="value price">¥${r.price.toFixed(2)}</span></li>
+            <li><span class="icon">票</span><span class="label">付款分类</span><span class="value">${escapeHtml(paymentLabel(r))}</span></li>
+            <li><span class="icon">¥</span><span class="label">金额</span><span class="value price">¥${r.price.toFixed(2)}</span></li>
             <li><span class="icon">👥</span><span class="label">购买渠道</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
         `;
         document.getElementById('detailModal').classList.add('active');
