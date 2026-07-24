@@ -891,7 +891,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260724-db-1';
+    const APP_VERSION = '20260724-db-auto-theme';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -951,6 +951,11 @@
             btn.textContent = isDark ? '☀' : '☾';
             btn.title = isDark ? '浅色模式' : '深色模式';
         }
+    }
+
+    function getThemeByTime(date = new Date()) {
+        const hour = date.getHours();
+        return (hour >= 18 || hour < 7) ? 'dark' : 'light';
     }
 
     function toggleTheme() {
@@ -1234,7 +1239,7 @@
     updateTime();
     setInterval(updateTime, 30000);
 
-    applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+    applyTheme(getThemeByTime());
     window.GMQD_VERSION = APP_VERSION;
     renderGrid();
     loadRecordsFromApi().then(migrateLocalRecordsOnce);
