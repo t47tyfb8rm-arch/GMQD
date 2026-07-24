@@ -24,6 +24,9 @@ class RecordIn(BaseModel):
     paymentType: str = Field(default="正常", max_length=40)
     hasShipping: bool = False
     price: float = 0
+    depositAmount: float = 0
+    balanceAmount: float = 0
+    shippingAmount: float = 0
     quantity: int = 1
     status: str = Field(default="待付款", max_length=40)
     date: str = Field(default="", max_length=40)
@@ -46,6 +49,13 @@ def connect() -> sqlite3.Connection:
 
 
 def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
+    deposit_amount = row["deposit_amount"] or 0
+    balance_amount = row["balance_amount"] or 0
+    shipping_amount = row["shipping_amount"] or 0
+    price = row["price"] or 0
+    total_amount = deposit_amount + balance_amount + shipping_amount
+    if total_amount == 0 and price:
+        total_amount = price
     return {
         "id": row["id"],
         "name": row["name"],
@@ -54,7 +64,11 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
         "orderNo": row["order_no"] or "",
         "paymentType": row["payment_type"] or "正常",
         "hasShipping": bool(row["has_shipping"] or 0),
-        "price": row["price"] or 0,
+        "price": price,
+        "depositAmount": deposit_amount,
+        "balanceAmount": balance_amount,
+        "shippingAmount": shipping_amount,
+        "totalAmount": total_amount,
         "quantity": row["quantity"] or 1,
         "status": row["status"] or "待付款",
         "date": row["purchase_date"] or "",
@@ -85,6 +99,9 @@ def init_db() -> None:
                 payment_type TEXT DEFAULT '正常',
                 has_shipping INTEGER DEFAULT 0,
                 price REAL DEFAULT 0,
+                deposit_amount REAL DEFAULT 0,
+                balance_amount REAL DEFAULT 0,
+                shipping_amount REAL DEFAULT 0,
                 quantity INTEGER DEFAULT 1,
                 status TEXT DEFAULT '待付款',
                 purchase_date TEXT DEFAULT '',
@@ -100,6 +117,12 @@ def init_db() -> None:
             conn.execute("ALTER TABLE records ADD COLUMN payment_type TEXT DEFAULT '正常'")
         if "has_shipping" not in columns:
             conn.execute("ALTER TABLE records ADD COLUMN has_shipping INTEGER DEFAULT 0")
+        if "deposit_amount" not in columns:
+            conn.execute("ALTER TABLE records ADD COLUMN deposit_amount REAL DEFAULT 0")
+        if "balance_amount" not in columns:
+            conn.execute("ALTER TABLE records ADD COLUMN balance_amount REAL DEFAULT 0")
+        if "shipping_amount" not in columns:
+            conn.execute("ALTER TABLE records ADD COLUMN shipping_amount REAL DEFAULT 0")
         count = conn.execute("SELECT COUNT(*) AS count FROM records").fetchone()["count"]
         if count == 0:
             defaults = [
@@ -116,8 +139,8 @@ def init_db() -> None:
             conn.executemany(
                 """
                 INSERT INTO records
-                    (name, brand, platform, order_no, payment_type, has_shipping, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-                VALUES (?, ?, ?, ?, '正常', 0, ?, ?, ?, ?, ?, '', ?, ?)
+                    (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+                VALUES (?, ?, ?, ?, '正常', 0, ?, 0, 0, 0, ?, ?, ?, ?, '', ?, ?)
                 """,
                 [(*item, ts, ts) for item in defaults],
             )
@@ -149,11 +172,14 @@ def list_records() -> list[dict[str, Any]]:
 @app.post("/api/records")
 def create_record(record: RecordIn) -> dict[str, Any]:
     ts = now_text()
+    total_amount = record.depositAmount + record.balanceAmount + record.shippingAmount
+    if total_amount == 0:
+        total_amount = record.price
     record_id = execute_write(
         """
         INSERT INTO records
-            (name, brand, platform, order_no, payment_type, has_shipping, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             record.name.strip(),
@@ -161,8 +187,11 @@ def create_record(record: RecordIn) -> dict[str, Any]:
             record.platform.strip(),
             record.orderNo.strip(),
             record.paymentType.strip() or "正常",
-            1 if record.hasShipping else 0,
-            record.price,
+            1 if (record.hasShipping or record.shippingAmount > 0) else 0,
+            total_amount,
+            record.depositAmount,
+            record.balanceAmount,
+            record.shippingAmount,
             record.quantity,
             record.status,
             record.date,
@@ -186,6 +215,9 @@ def get_record(record_id: int) -> dict[str, Any]:
 
 @app.put("/api/records/{record_id}")
 def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
+    total_amount = record.depositAmount + record.balanceAmount + record.shippingAmount
+    if total_amount == 0:
+        total_amount = record.price
     with connect() as conn:
         exists = conn.execute("SELECT id FROM records WHERE id = ?", (record_id,)).fetchone()
         if not exists:
@@ -193,7 +225,8 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
         conn.execute(
             """
             UPDATE records
-            SET name = ?, brand = ?, platform = ?, order_no = ?, payment_type = ?, has_shipping = ?, price = ?, quantity = ?,
+            SET name = ?, brand = ?, platform = ?, order_no = ?, payment_type = ?, has_shipping = ?,
+                price = ?, deposit_amount = ?, balance_amount = ?, shipping_amount = ?, quantity = ?,
                 status = ?, purchase_date = ?, note = ?, image_data = ?, updated_at = ?
             WHERE id = ?
             """,
@@ -203,8 +236,11 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
                 record.platform.strip(),
                 record.orderNo.strip(),
                 record.paymentType.strip() or "正常",
-                1 if record.hasShipping else 0,
-                record.price,
+                1 if (record.hasShipping or record.shippingAmount > 0) else 0,
+                total_amount,
+                record.depositAmount,
+                record.balanceAmount,
+                record.shippingAmount,
                 record.quantity,
                 record.status,
                 record.date,
@@ -237,8 +273,8 @@ def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
         conn.executemany(
             """
             INSERT INTO records
-                (name, brand, platform, order_no, payment_type, has_shipping, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -247,8 +283,11 @@ def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
                     item.platform.strip(),
                     item.orderNo.strip(),
                     item.paymentType.strip() or "正常",
-                    1 if item.hasShipping else 0,
-                    item.price,
+                    1 if (item.hasShipping or item.shippingAmount > 0) else 0,
+                    item.depositAmount + item.balanceAmount + item.shippingAmount or item.price,
+                    item.depositAmount,
+                    item.balanceAmount,
+                    item.shippingAmount,
                     item.quantity,
                     item.status,
                     item.date,
