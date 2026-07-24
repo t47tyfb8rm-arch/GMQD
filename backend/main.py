@@ -53,9 +53,7 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
     balance_amount = row["balance_amount"] or 0
     shipping_amount = row["shipping_amount"] or 0
     price = row["price"] or 0
-    total_amount = deposit_amount + balance_amount + shipping_amount
-    if total_amount == 0 and price:
-        total_amount = price
+    total_amount = price or (deposit_amount + balance_amount + shipping_amount)
     return {
         "id": row["id"],
         "name": row["name"],
@@ -172,9 +170,7 @@ def list_records() -> list[dict[str, Any]]:
 @app.post("/api/records")
 def create_record(record: RecordIn) -> dict[str, Any]:
     ts = now_text()
-    total_amount = record.depositAmount + record.balanceAmount + record.shippingAmount
-    if total_amount == 0:
-        total_amount = record.price
+    total_amount = record.price or (record.depositAmount + record.balanceAmount + record.shippingAmount)
     record_id = execute_write(
         """
         INSERT INTO records
@@ -215,9 +211,7 @@ def get_record(record_id: int) -> dict[str, Any]:
 
 @app.put("/api/records/{record_id}")
 def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
-    total_amount = record.depositAmount + record.balanceAmount + record.shippingAmount
-    if total_amount == 0:
-        total_amount = record.price
+    total_amount = record.price or (record.depositAmount + record.balanceAmount + record.shippingAmount)
     with connect() as conn:
         exists = conn.execute("SELECT id FROM records WHERE id = ?", (record_id,)).fetchone()
         if not exists:
