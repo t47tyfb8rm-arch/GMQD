@@ -891,7 +891,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260724-db-auto-theme';
+    const APP_VERSION = '20260724-db-no-auto-import';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -918,27 +918,6 @@
         } catch (error) {
             document.getElementById('productGrid').innerHTML =
                 `<div class="empty-state"><div class="empty-icon">!</div><div class="empty-text">数据库连接失败，请确认后端服务已启动</div></div>`;
-            console.error(error);
-        }
-    }
-
-    async function migrateLocalRecordsOnce() {
-        try {
-            if (localStorage.getItem('purchase_records_migrated_to_db') === '1') return;
-            const localRecords = JSON.parse(localStorage.getItem('purchase_records') || '[]');
-            if (!Array.isArray(localRecords) || localRecords.length === 0) {
-                localStorage.setItem('purchase_records_migrated_to_db', '1');
-                return;
-            }
-            if (!confirm(`检测到浏览器里有 ${localRecords.length} 条旧记录，是否导入数据库？`)) return;
-            await apiRequest('/api/import', {
-                method: 'POST',
-                body: JSON.stringify(localRecords),
-            });
-            localStorage.setItem('purchase_records_migrated_to_db', '1');
-            await loadRecordsFromApi();
-        } catch (error) {
-            alert('旧数据导入数据库失败，请稍后再试。');
             console.error(error);
         }
     }
@@ -1242,7 +1221,7 @@
     applyTheme(getThemeByTime());
     window.GMQD_VERSION = APP_VERSION;
     renderGrid();
-    loadRecordsFromApi().then(migrateLocalRecordsOnce);
+    loadRecordsFromApi();
 
     // 点击蒙层关闭弹窗
     document.querySelectorAll('.modal-overlay').forEach(el => {
