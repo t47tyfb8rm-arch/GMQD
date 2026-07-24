@@ -451,6 +451,13 @@
             resize: vertical;
             min-height: 60px;
         }
+        .custom-brand-wrap {
+            display: none;
+            margin-top: 8px;
+        }
+        .custom-brand-wrap.active {
+            display: block;
+        }
         .form-group .radio-group {
             display: flex;
             flex-wrap: wrap;
@@ -798,6 +805,19 @@
                 <input type="text" id="formName" required placeholder="输入商品名称">
             </div>
             <div class="form-group">
+                <label>品牌</label>
+                <select id="formBrand" onchange="toggleCustomBrand()">
+                    <option value="">未选择</option>
+                    <option value="淘宝店铺">淘宝店铺</option>
+                    <option value="拼多多店铺">拼多多店铺</option>
+                    <option value="京东店铺">京东店铺</option>
+                    <option value="自定义">自定义品牌</option>
+                </select>
+                <div class="custom-brand-wrap" id="customBrandWrap">
+                    <input type="text" id="formCustomBrand" placeholder="输入品牌名称">
+                </div>
+            </div>
+            <div class="form-group">
                 <label>购买平台</label>
                 <input type="text" id="formPlatform" placeholder="如：淘宝、京东">
             </div>
@@ -933,7 +953,7 @@
                     <div class="name">${escapeHtml(r.name)}</div>
                     <div class="price">¥${r.price.toFixed(2)}</div>
                     <div class="meta">
-                        <span class="status">${r.platform || '其他'}</span>
+                        <span class="status">${escapeHtml(r.brand || r.platform || '其他')}</span>
                         <span class="qty">×${r.quantity}</span>
                     </div>
                 </div>
@@ -967,6 +987,9 @@
         document.getElementById('formImage').value = '';
         updateImagePreview('');
         document.getElementById('formName').value = '';
+        document.getElementById('formBrand').value = '';
+        document.getElementById('formCustomBrand').value = '';
+        toggleCustomBrand();
         document.getElementById('formPlatform').value = '';
         document.getElementById('formOrderNo').value = '';
         document.getElementById('formPrice').value = '';
@@ -983,6 +1006,7 @@
         document.getElementById('formModalTitle').textContent = '编辑记录';
         document.getElementById('editId').value = r.id;
         document.getElementById('formName').value = r.name;
+        setBrandValue(r.brand || '');
         document.getElementById('formPlatform').value = r.platform || '';
         document.getElementById('formOrderNo').value = r.orderNo || '';
         document.getElementById('formPrice').value = r.price;
@@ -999,6 +1023,36 @@
 
     function closeFormModal() {
         document.getElementById('formModal').classList.remove('active');
+    }
+
+    function toggleCustomBrand() {
+        const isCustom = document.getElementById('formBrand').value === '自定义';
+        document.getElementById('customBrandWrap').classList.toggle('active', isCustom);
+    }
+
+    function setBrandValue(brand) {
+        const select = document.getElementById('formBrand');
+        const customInput = document.getElementById('formCustomBrand');
+        const hasOption = Array.from(select.options).some(option => option.value === brand);
+        if (!brand) {
+            select.value = '';
+            customInput.value = '';
+        } else if (hasOption) {
+            select.value = brand;
+            customInput.value = '';
+        } else {
+            select.value = '自定义';
+            customInput.value = brand;
+        }
+        toggleCustomBrand();
+    }
+
+    function getBrandValue() {
+        const selected = document.getElementById('formBrand').value;
+        if (selected === '自定义') {
+            return document.getElementById('formCustomBrand').value.trim();
+        }
+        return selected;
     }
 
     function updateImagePreview(src) {
@@ -1062,6 +1116,7 @@
         const editId = document.getElementById('editId').value;
         const data = {
             name: document.getElementById('formName').value.trim(),
+            brand: getBrandValue(),
             platform: document.getElementById('formPlatform').value.trim(),
             orderNo: document.getElementById('formOrderNo').value.trim(),
             price: parseFloat(document.getElementById('formPrice').value) || 0,
@@ -1099,6 +1154,7 @@
         const list = document.getElementById('detailList');
         list.innerHTML = `
             <li><span class="icon">▤</span><span class="label">类型</span><span class="value">${escapeHtml(r.note || '—')}</span></li>
+            <li><span class="icon">🏷</span><span class="label">品牌</span><span class="value">${escapeHtml(r.brand || '—')}</span></li>
             <li><span class="icon">N</span><span class="label">数量</span><span class="value">${r.quantity}</span></li>
             <li><span class="icon">📄</span><span class="label">属性</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
             <li><span class="icon">♥</span><span class="label">拥有状态</span><span class="value">${r.status}</span></li>
@@ -1116,8 +1172,9 @@
 
     function editFromDetail() {
         if (currentDetailId) {
+            const id = currentDetailId;
             closeDetailModal();
-            openEditModal(currentDetailId);
+            openEditModal(id);
         }
     }
 
