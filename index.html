@@ -286,6 +286,24 @@
             border-radius: 0 8px 8px 0;
             font-weight: 500;
         }
+        .product-card .quick-edit {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.92);
+            color: #ff4fa8;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        body.dark .product-card .quick-edit {
+            background: rgba(33, 27, 32, 0.92);
+            color: #ff8bc8;
+        }
         .product-card .card-body {
             padding: 8px 10px 10px;
         }
@@ -450,13 +468,6 @@
         .form-group textarea {
             resize: vertical;
             min-height: 60px;
-        }
-        .custom-brand-wrap {
-            display: none;
-            margin-top: 8px;
-        }
-        .custom-brand-wrap.active {
-            display: block;
         }
         .form-group .radio-group {
             display: flex;
@@ -806,16 +817,16 @@
             </div>
             <div class="form-group">
                 <label>品牌</label>
-                <select id="formBrand" onchange="toggleCustomBrand()">
-                    <option value="">未选择</option>
-                    <option value="淘宝店铺">淘宝店铺</option>
-                    <option value="拼多多店铺">拼多多店铺</option>
-                    <option value="京东店铺">京东店铺</option>
-                    <option value="自定义">自定义品牌</option>
-                </select>
-                <div class="custom-brand-wrap" id="customBrandWrap">
-                    <input type="text" id="formCustomBrand" placeholder="输入品牌名称">
-                </div>
+                <input type="text" id="formBrand" list="brandOptions" placeholder="输入或选择品牌">
+                <datalist id="brandOptions">
+                    <option value="淘宝店铺"></option>
+                    <option value="拼多多店铺"></option>
+                    <option value="京东店铺"></option>
+                    <option value="闲鱼"></option>
+                    <option value="微店"></option>
+                    <option value="娃衣"></option>
+                    <option value="配件"></option>
+                </datalist>
             </div>
             <div class="form-group">
                 <label>购买平台</label>
@@ -880,10 +891,20 @@
 
 <script>
     // ===== 数据管理 =====
-    let records = JSON.parse(localStorage.getItem('purchase_records') || '[]');
+    const APP_VERSION = '20260724-2115';
+    let records = loadRecords();
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
+
+    function loadRecords() {
+        try {
+            return JSON.parse(localStorage.getItem('purchase_records') || '[]');
+        } catch (error) {
+            alert('本地数据读取失败，页面会先用空数据打开。旧数据还在浏览器里，建议先不要清缓存。');
+            return [];
+        }
+    }
 
     // 初始化默认数据
     if (records.length === 0) {
@@ -902,7 +923,14 @@
     }
 
     function saveToStorage() {
-        localStorage.setItem('purchase_records', JSON.stringify(records));
+        try {
+            localStorage.setItem('purchase_records', JSON.stringify(records));
+            localStorage.setItem('purchase_records_saved_at', new Date().toISOString());
+            return true;
+        } catch (error) {
+            alert('保存失败：浏览器本地存储空间可能满了。请先删除几张大图，或换一张更小的图片后再保存。');
+            return false;
+        }
     }
 
     function applyTheme(theme) {
@@ -948,6 +976,7 @@
                 <div class="img-wrap">
                     ${r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '<div class="placeholder-icon">🛍</div>'}
                     ${r.status ? `<div class="tag">${r.status}</div>` : ''}
+                    <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
                 </div>
                 <div class="card-body">
                     <div class="name">${escapeHtml(r.name)}</div>
@@ -988,8 +1017,6 @@
         updateImagePreview('');
         document.getElementById('formName').value = '';
         document.getElementById('formBrand').value = '';
-        document.getElementById('formCustomBrand').value = '';
-        toggleCustomBrand();
         document.getElementById('formPlatform').value = '';
         document.getElementById('formOrderNo').value = '';
         document.getElementById('formPrice').value = '';
@@ -1006,7 +1033,7 @@
         document.getElementById('formModalTitle').textContent = '编辑记录';
         document.getElementById('editId').value = r.id;
         document.getElementById('formName').value = r.name;
-        setBrandValue(r.brand || '');
+        document.getElementById('formBrand').value = r.brand || '';
         document.getElementById('formPlatform').value = r.platform || '';
         document.getElementById('formOrderNo').value = r.orderNo || '';
         document.getElementById('formPrice').value = r.price;
@@ -1025,34 +1052,8 @@
         document.getElementById('formModal').classList.remove('active');
     }
 
-    function toggleCustomBrand() {
-        const isCustom = document.getElementById('formBrand').value === '自定义';
-        document.getElementById('customBrandWrap').classList.toggle('active', isCustom);
-    }
-
-    function setBrandValue(brand) {
-        const select = document.getElementById('formBrand');
-        const customInput = document.getElementById('formCustomBrand');
-        const hasOption = Array.from(select.options).some(option => option.value === brand);
-        if (!brand) {
-            select.value = '';
-            customInput.value = '';
-        } else if (hasOption) {
-            select.value = brand;
-            customInput.value = '';
-        } else {
-            select.value = '自定义';
-            customInput.value = brand;
-        }
-        toggleCustomBrand();
-    }
-
     function getBrandValue() {
-        const selected = document.getElementById('formBrand').value;
-        if (selected === '自定义') {
-            return document.getElementById('formCustomBrand').value.trim();
-        }
-        return selected;
+        return document.getElementById('formBrand').value.trim();
     }
 
     function updateImagePreview(src) {
@@ -1075,7 +1076,7 @@
         });
     }
 
-    function resizeImage(dataUrl, maxSize = 900, quality = 0.82) {
+    function resizeImage(dataUrl, maxSize = 640, quality = 0.72) {
         return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
@@ -1137,9 +1138,14 @@
             records.unshift(data);
         }
 
-        saveToStorage();
+        if (!saveToStorage()) return;
         renderGrid();
         closeFormModal();
+    }
+
+    function quickEdit(event, id) {
+        event.stopPropagation();
+        openEditModal(id);
     }
 
     // ===== 详情弹窗 =====
@@ -1210,6 +1216,7 @@
     setInterval(updateTime, 30000);
 
     applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+    window.GMQD_VERSION = APP_VERSION;
     renderGrid();
 
     // 点击蒙层关闭弹窗
