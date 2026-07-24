@@ -22,6 +22,7 @@ class RecordIn(BaseModel):
     platform: str = Field(default="", max_length=120)
     orderNo: str = Field(default="", max_length=180)
     paymentType: str = Field(default="正常", max_length=40)
+    hasShipping: bool = False
     price: float = 0
     quantity: int = 1
     status: str = Field(default="待付款", max_length=40)
@@ -52,6 +53,7 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
         "platform": row["platform"] or "",
         "orderNo": row["order_no"] or "",
         "paymentType": row["payment_type"] or "正常",
+        "hasShipping": bool(row["has_shipping"] or 0),
         "price": row["price"] or 0,
         "quantity": row["quantity"] or 1,
         "status": row["status"] or "待付款",
@@ -81,6 +83,7 @@ def init_db() -> None:
                 platform TEXT DEFAULT '',
                 order_no TEXT DEFAULT '',
                 payment_type TEXT DEFAULT '正常',
+                has_shipping INTEGER DEFAULT 0,
                 price REAL DEFAULT 0,
                 quantity INTEGER DEFAULT 1,
                 status TEXT DEFAULT '待付款',
@@ -95,6 +98,8 @@ def init_db() -> None:
         columns = {row["name"] for row in conn.execute("PRAGMA table_info(records)").fetchall()}
         if "payment_type" not in columns:
             conn.execute("ALTER TABLE records ADD COLUMN payment_type TEXT DEFAULT '正常'")
+        if "has_shipping" not in columns:
+            conn.execute("ALTER TABLE records ADD COLUMN has_shipping INTEGER DEFAULT 0")
         count = conn.execute("SELECT COUNT(*) AS count FROM records").fetchone()["count"]
         if count == 0:
             defaults = [
@@ -111,8 +116,8 @@ def init_db() -> None:
             conn.executemany(
                 """
                 INSERT INTO records
-                    (name, brand, platform, order_no, payment_type, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-                VALUES (?, ?, ?, ?, '正常', ?, ?, ?, ?, ?, '', ?, ?)
+                    (name, brand, platform, order_no, payment_type, has_shipping, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+                VALUES (?, ?, ?, ?, '正常', 0, ?, ?, ?, ?, ?, '', ?, ?)
                 """,
                 [(*item, ts, ts) for item in defaults],
             )
@@ -147,8 +152,8 @@ def create_record(record: RecordIn) -> dict[str, Any]:
     record_id = execute_write(
         """
         INSERT INTO records
-            (name, brand, platform, order_no, payment_type, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (name, brand, platform, order_no, payment_type, has_shipping, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             record.name.strip(),
@@ -156,6 +161,7 @@ def create_record(record: RecordIn) -> dict[str, Any]:
             record.platform.strip(),
             record.orderNo.strip(),
             record.paymentType.strip() or "正常",
+            1 if record.hasShipping else 0,
             record.price,
             record.quantity,
             record.status,
@@ -187,7 +193,7 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
         conn.execute(
             """
             UPDATE records
-            SET name = ?, brand = ?, platform = ?, order_no = ?, payment_type = ?, price = ?, quantity = ?,
+            SET name = ?, brand = ?, platform = ?, order_no = ?, payment_type = ?, has_shipping = ?, price = ?, quantity = ?,
                 status = ?, purchase_date = ?, note = ?, image_data = ?, updated_at = ?
             WHERE id = ?
             """,
@@ -197,6 +203,7 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
                 record.platform.strip(),
                 record.orderNo.strip(),
                 record.paymentType.strip() or "正常",
+                1 if record.hasShipping else 0,
                 record.price,
                 record.quantity,
                 record.status,
@@ -230,8 +237,8 @@ def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
         conn.executemany(
             """
             INSERT INTO records
-                (name, brand, platform, order_no, payment_type, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (name, brand, platform, order_no, payment_type, has_shipping, price, quantity, status, purchase_date, note, image_data, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 (
@@ -240,6 +247,7 @@ def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
                     item.platform.strip(),
                     item.orderNo.strip(),
                     item.paymentType.strip() or "正常",
+                    1 if item.hasShipping else 0,
                     item.price,
                     item.quantity,
                     item.status,
