@@ -385,9 +385,9 @@
             border-radius: 16px 16px 0 0;
             width: 100%;
             max-width: 500px;
-            max-height: 85vh;
+            max-height: 96vh;
             overflow-y: auto;
-            padding: 20px 20px 30px;
+            padding: 12px 14px 18px;
             animation: slideUp 0.3s ease;
         }
         body.dark .modal-content {
@@ -402,7 +402,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
         .modal-content .modal-header h3 {
             font-size: 18px;
@@ -426,22 +426,22 @@
             color: #f3edf2;
         }
         .form-group {
-            margin-bottom: 14px;
+            margin-bottom: 8px;
         }
         .form-group label {
             display: block;
-            font-size: 14px;
+            font-size: 12px;
             color: #999;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid #eee;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 14px;
             color: #333;
             background: #fafafa;
             outline: none;
@@ -462,22 +462,25 @@
         }
         .form-group textarea {
             resize: vertical;
-            min-height: 60px;
+            min-height: 38px;
         }
         .form-row {
             display: grid;
             grid-template-columns: 1.1fr 0.8fr 1fr;
-            gap: 10px;
+            gap: 8px;
             align-items: start;
+        }
+        .form-row.two-col {
+            grid-template-columns: 1.2fr 1fr;
         }
         .form-row label {
             display: block;
-            font-size: 14px;
+            font-size: 12px;
             color: #999;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .form-row .form-group {
-            margin-bottom: 14px;
+            margin-bottom: 8px;
         }
         .checkbox-line {
             display: inline-flex;
@@ -499,7 +502,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid #eee;
             border-radius: 8px;
             background: #fafafa;
@@ -604,14 +607,14 @@
         }
         .image-uploader {
             display: grid;
-            grid-template-columns: 86px 1fr;
-            gap: 12px;
+            grid-template-columns: 60px 1fr;
+            gap: 10px;
             align-items: center;
         }
         .image-preview {
-            width: 86px;
-            height: 86px;
-            border-radius: 10px;
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
             background: #f5f5f5;
             border: 1px dashed #e7cbd9;
             display: flex;
@@ -619,7 +622,7 @@
             justify-content: center;
             overflow: hidden;
             color: #ccc;
-            font-size: 28px;
+            font-size: 22px;
         }
         .image-preview img {
             width: 100%;
@@ -638,8 +641,8 @@
         .image-actions label {
             border: none;
             border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 13px;
+            padding: 7px 10px;
+            font-size: 12px;
             cursor: pointer;
             background: #fff0f6;
             color: #ff4fa8;
@@ -662,11 +665,11 @@
         .modal-footer {
             display: flex;
             gap: 10px;
-            margin-top: 16px;
+            margin-top: 8px;
         }
         .modal-footer button {
             flex: 1;
-            padding: 10px;
+            padding: 9px;
             border: none;
             border-radius: 8px;
             font-size: 15px;
@@ -828,6 +831,9 @@
                 grid-template-columns: 1fr;
                 gap: 0;
             }
+            .form-row.two-col {
+                grid-template-columns: 1fr 1fr;
+            }
         }
         @media (min-width: 600px) {
             .product-grid {
@@ -896,26 +902,34 @@
                     </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label>商品名称 *</label>
-                <input type="text" id="formName" required placeholder="输入商品名称">
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label>商品名称 *</label>
+                    <input type="text" id="formName" required placeholder="输入商品名称">
+                </div>
+                <div class="form-group">
+                    <label>品牌</label>
+                    <input type="text" id="formBrand" list="brandOptions" placeholder="品牌">
+                    <datalist id="brandOptions">
+                        <option value="淘宝店铺"></option>
+                        <option value="拼多多店铺"></option>
+                        <option value="京东店铺"></option>
+                        <option value="闲鱼"></option>
+                        <option value="微店"></option>
+                        <option value="娃衣"></option>
+                        <option value="配件"></option>
+                    </datalist>
+                </div>
             </div>
-            <div class="form-group">
-                <label>品牌</label>
-                <input type="text" id="formBrand" list="brandOptions" placeholder="输入或选择品牌">
-                <datalist id="brandOptions">
-                    <option value="淘宝店铺"></option>
-                    <option value="拼多多店铺"></option>
-                    <option value="京东店铺"></option>
-                    <option value="闲鱼"></option>
-                    <option value="微店"></option>
-                    <option value="娃衣"></option>
-                    <option value="配件"></option>
-                </datalist>
-            </div>
-            <div class="form-group">
-                <label>购买平台</label>
-                <input type="text" id="formPlatform" placeholder="如：淘宝、京东">
+            <div class="form-row two-col">
+                <div class="form-group">
+                    <label>购买平台</label>
+                    <input type="text" id="formPlatform" placeholder="淘宝、京东">
+                </div>
+                <div class="form-group">
+                    <label>购买日期</label>
+                    <input type="date" id="formDate">
+                </div>
             </div>
             <div class="form-row item-row">
                 <div class="form-group">
@@ -947,10 +961,6 @@
                     <label><input type="radio" name="formStatus" value="已发货"><span>已发货</span></label>
                     <label><input type="radio" name="formStatus" value="已收货"><span>已收货</span></label>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>购买日期</label>
-                <input type="date" id="formDate">
             </div>
             <div class="form-group">
                 <label>备注</label>
@@ -999,7 +1009,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-db-payment-modal';
+    const APP_VERSION = '20260725-db-compact-form';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
