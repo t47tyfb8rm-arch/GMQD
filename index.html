@@ -193,17 +193,18 @@
         /* ===== 商品网格 ===== */
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            padding: 12px 16px 80px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            padding: 10px 12px 80px;
         }
         .product-card {
             background: #fff;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 86px;
         }
         body.dark .product-card {
             background: #211b20;
@@ -213,48 +214,12 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-        .product-card .img-wrap {
-            position: relative;
-            width: 100%;
-            padding-top: 100%;
-            background: #f5f5f5;
-            overflow: hidden;
-        }
-        .product-card .img-wrap img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        body.dark .product-card .img-wrap {
-            background: #2a2429;
-        }
-        .product-card .img-wrap .placeholder-icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 32px;
-            color: #ddd;
-        }
-        .product-card .img-wrap .tag {
-            position: absolute;
-            top: 8px;
-            left: 0;
-            background: #ffccd5;
-            color: #ff4757;
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 0 8px 8px 0;
-            font-weight: 500;
-        }
         .product-card .quick-edit {
             position: absolute;
-            right: 8px;
-            bottom: 8px;
-            width: 30px;
-            height: 30px;
+            right: 6px;
+            top: 6px;
+            width: 24px;
+            height: 24px;
             border: none;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.92);
@@ -268,27 +233,29 @@
             color: #ff8bc8;
         }
         .product-card .card-body {
-            padding: 8px 10px 10px;
+            position: relative;
+            padding: 10px 8px 8px;
         }
         .product-card .card-body .name {
-            font-size: 13px;
+            font-size: 12px;
             color: #000;
-            font-weight: 400;
+            font-weight: 500;
             line-height: 1.3;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            min-height: 34px;
+            min-height: 31px;
+            padding-right: 24px;
         }
         body.dark .product-card .card-body .name {
             color: #fff;
         }
         .product-card .card-body .price {
-            font-size: 14px;
+            font-size: 13px;
             color: #ff69b4;
-            font-weight: 500;
-            margin-top: 4px;
+            font-weight: 600;
+            margin-top: 6px;
         }
         .product-card .card-body .payment-row {
             margin-top: 6px;
@@ -480,6 +447,12 @@
             grid-template-columns: 1.1fr 0.8fr 1fr;
             gap: 10px;
             align-items: start;
+        }
+        .form-row label {
+            display: block;
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 4px;
         }
         .form-row .form-group {
             margin-bottom: 14px;
@@ -748,9 +721,9 @@
         /* ===== 响应式 ===== */
         @media (max-width: 400px) {
             .product-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 8px;
-                padding: 10px 12px 70px;
+                padding: 10px 10px 70px;
             }
             .header-info .title {
                 font-size: 20px;
@@ -845,7 +818,7 @@
                 <label>购买平台</label>
                 <input type="text" id="formPlatform" placeholder="如：淘宝、京东">
             </div>
-            <div class="form-row">
+            <div class="form-row item-row">
                 <div class="form-group">
                     <label>尺码</label>
                     <input type="text" id="formOrderNo" placeholder="如：M、L">
@@ -856,17 +829,25 @@
                 </div>
                 <div class="form-group">
                     <label>金额 (¥)</label>
-                    <input type="number" id="formPrice" step="0.01" min="0" required placeholder="0.00">
+                    <input type="number" id="formPrice" step="0.01" min="0" placeholder="0.00">
                 </div>
             </div>
             <div class="form-group">
-                <label>付款分类</label>
-                <div class="radio-group" id="formPaymentTypeGroup">
-                    <label><input type="radio" name="formPaymentType" value="正常" checked><span>正常</span></label>
-                    <label><input type="radio" name="formPaymentType" value="定金"><span>定金</span></label>
-                    <label><input type="radio" name="formPaymentType" value="尾款"><span>尾款</span></label>
+                <label>付款明细</label>
+                <div class="form-row payment-input-row">
+                    <div>
+                        <label>定金</label>
+                        <input type="number" id="formDepositAmount" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label>尾款</label>
+                        <input type="number" id="formBalanceAmount" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label>运费</label>
+                        <input type="number" id="formShippingAmount" step="0.01" min="0" placeholder="0.00">
+                    </div>
                 </div>
-                <label class="checkbox-line"><input type="checkbox" id="formHasShipping"> 包含运费</label>
             </div>
             <div class="form-group">
                 <label>状态</label>
@@ -914,7 +895,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-db-payment-shipping';
+    const APP_VERSION = '20260725-db-payment-parts';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -973,7 +954,7 @@
 
     function updateStats() {
         const total = records.length;
-        const totalPrice = records.reduce((s, r) => s + Number(r.price || 0), 0);
+        const totalPrice = records.reduce((s, r) => s + totalAmount(r), 0);
         document.getElementById('totalCount').textContent = `已收录 ${total}`;
         document.getElementById('totalPrice').textContent = `总价 ¥${totalPrice.toFixed(2)}`;
     }
@@ -990,20 +971,12 @@
 
         grid.innerHTML = filtered.map(r => `
             <div class="product-card" onclick="openDetail('${r.id}')">
-                <div class="img-wrap">
-                    ${r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '<div class="placeholder-icon">🛍</div>'}
-                    ${r.status ? `<div class="tag">${r.status}</div>` : ''}
-                    <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
-                </div>
                     <div class="card-body">
+                        <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
                         <div class="name">${escapeHtml(r.name)}</div>
-                        <div class="price">¥${r.price.toFixed(2)}</div>
+                        <div class="price">¥${totalAmount(r).toFixed(2)}</div>
                         <div class="payment-row">
                             <span class="payment-type ${paymentTypeClass(r)}">${escapeHtml(paymentLabel(r))}</span>
-                        </div>
-                        <div class="meta">
-                            <span class="status">${escapeHtml(r.orderNo || '未填尺码')}</span>
-                            <span class="qty">×${r.quantity}</span>
                         </div>
                     </div>
                 </div>
@@ -1018,14 +991,24 @@
         return div.innerHTML;
     }
 
+    function totalAmount(record) {
+        const partsTotal = Number(record.depositAmount || 0) + Number(record.balanceAmount || 0) + Number(record.shippingAmount || 0);
+        return partsTotal || Number(record.totalAmount || record.price || 0);
+    }
+
     function paymentLabel(record) {
-        const type = record.paymentType || '正常';
-        return record.hasShipping ? `${type}+运费` : type;
+        const labels = [];
+        if (Number(record.depositAmount || 0) > 0) labels.push('定金');
+        if (Number(record.balanceAmount || 0) > 0) labels.push('尾款');
+        if (Number(record.shippingAmount || 0) > 0) labels.push('运费');
+        if (labels.length) return `${labels.join('+')} ${totalAmount(record).toFixed(0)}`;
+        return record.paymentType || '正常';
     }
 
     function paymentTypeClass(record) {
         const type = record.paymentType || '正常';
-        if (record.hasShipping) return 'shipping';
+        if (Number(record.shippingAmount || 0) > 0) return 'shipping';
+        if (Number(record.depositAmount || 0) > 0 && Number(record.balanceAmount || 0) > 0) return 'balance';
         if (type === '定金') return 'deposit';
         if (type === '尾款') return 'balance';
         return 'normal';
@@ -1053,9 +1036,10 @@
         document.getElementById('formPlatform').value = '';
         document.getElementById('formOrderNo').value = '';
         document.getElementById('formPrice').value = '';
+        document.getElementById('formDepositAmount').value = '';
+        document.getElementById('formBalanceAmount').value = '';
+        document.getElementById('formShippingAmount').value = '';
         document.getElementById('formQuantity').value = '1';
-        document.querySelector('input[name="formPaymentType"][value="正常"]').checked = true;
-        document.getElementById('formHasShipping').checked = false;
         document.querySelector('input[name="formStatus"][value="待付款"]').checked = true;
         document.getElementById('formDate').value = new Date().toISOString().slice(0, 10);
         document.getElementById('formNote').value = '';
@@ -1071,12 +1055,11 @@
         document.getElementById('formBrand').value = r.brand || '';
         document.getElementById('formPlatform').value = r.platform || '';
         document.getElementById('formOrderNo').value = r.orderNo || '';
-        document.getElementById('formPrice').value = r.price;
+        document.getElementById('formPrice').value = Number(r.price || r.totalAmount || 0) || '';
+        document.getElementById('formDepositAmount').value = Number(r.depositAmount || 0) || '';
+        document.getElementById('formBalanceAmount').value = Number(r.balanceAmount || 0) || '';
+        document.getElementById('formShippingAmount').value = Number(r.shippingAmount || 0) || '';
         document.getElementById('formQuantity').value = r.quantity;
-        const normalizedPaymentType = r.paymentType === '运费' ? '正常' : (r.paymentType || '正常');
-        const paymentTypeInput = document.querySelector(`input[name="formPaymentType"][value="${normalizedPaymentType}"]`);
-        if (paymentTypeInput) paymentTypeInput.checked = true;
-        document.getElementById('formHasShipping').checked = !!r.hasShipping || r.paymentType === '运费';
         const statusInput = document.querySelector(`input[name="formStatus"][value="${r.status}"]`);
         if (statusInput) statusInput.checked = true;
         document.getElementById('formImageData').value = r.imageData || '';
@@ -1159,9 +1142,12 @@
             brand: getBrandValue(),
             platform: document.getElementById('formPlatform').value.trim(),
             orderNo: document.getElementById('formOrderNo').value.trim(),
-            paymentType: document.querySelector('input[name="formPaymentType"]:checked').value,
-            hasShipping: document.getElementById('formHasShipping').checked,
-            price: parseFloat(document.getElementById('formPrice').value) || 0,
+            paymentType: inferPaymentType(),
+            hasShipping: Number(document.getElementById('formShippingAmount').value || 0) > 0,
+            price: totalFromForm(),
+            depositAmount: parseFloat(document.getElementById('formDepositAmount').value) || 0,
+            balanceAmount: parseFloat(document.getElementById('formBalanceAmount').value) || 0,
+            shippingAmount: parseFloat(document.getElementById('formShippingAmount').value) || 0,
             quantity: parseInt(document.getElementById('formQuantity').value) || 1,
             status: document.querySelector('input[name="formStatus"]:checked').value,
             date: document.getElementById('formDate').value,
@@ -1189,6 +1175,23 @@
         }
     }
 
+    function totalFromForm() {
+        const partsTotal =
+            (parseFloat(document.getElementById('formDepositAmount').value) || 0) +
+            (parseFloat(document.getElementById('formBalanceAmount').value) || 0) +
+            (parseFloat(document.getElementById('formShippingAmount').value) || 0);
+        return partsTotal || (parseFloat(document.getElementById('formPrice').value) || 0);
+    }
+
+    function inferPaymentType() {
+        const deposit = parseFloat(document.getElementById('formDepositAmount').value) || 0;
+        const balance = parseFloat(document.getElementById('formBalanceAmount').value) || 0;
+        if (deposit > 0 && balance > 0) return '定金+尾款';
+        if (deposit > 0) return '定金';
+        if (balance > 0) return '尾款';
+        return '正常';
+    }
+
     function quickEdit(event, id) {
         event.stopPropagation();
         openEditModal(id);
@@ -1211,7 +1214,10 @@
             <li><span class="icon">📏</span><span class="label">尺码</span><span class="value">${escapeHtml(r.orderNo || '—')}</span></li>
             <li><span class="icon">♥</span><span class="label">拥有状态</span><span class="value">${r.status}</span></li>
             <li><span class="icon">票</span><span class="label">付款分类</span><span class="value">${escapeHtml(paymentLabel(r))}</span></li>
-            <li><span class="icon">¥</span><span class="label">金额</span><span class="value price">¥${r.price.toFixed(2)}</span></li>
+            <li><span class="icon">¥</span><span class="label">定金</span><span class="value">¥${Number(r.depositAmount || 0).toFixed(2)}</span></li>
+            <li><span class="icon">¥</span><span class="label">尾款</span><span class="value">¥${Number(r.balanceAmount || 0).toFixed(2)}</span></li>
+            <li><span class="icon">¥</span><span class="label">运费</span><span class="value">¥${Number(r.shippingAmount || 0).toFixed(2)}</span></li>
+            <li><span class="icon">¥</span><span class="label">合计</span><span class="value price">¥${totalAmount(r).toFixed(2)}</span></li>
             <li><span class="icon">👥</span><span class="label">购买渠道</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
         `;
         document.getElementById('detailModal').classList.add('active');
