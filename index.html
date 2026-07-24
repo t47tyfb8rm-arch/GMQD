@@ -891,45 +891,55 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260724-2115';
-    let records = loadRecords();
+    const APP_VERSION = '20260724-db-1';
+    const API_BASE = '';
+    let records = [];
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
 
-    function loadRecords() {
+    async function apiRequest(url, options = {}) {
+        const response = await fetch(API_BASE + url, {
+            headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+            ...options,
+        });
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || `请求失败：${response.status}`);
+        }
+        if (response.status === 204) return null;
+        return response.json();
+    }
+
+    async function loadRecordsFromApi() {
         try {
-            return JSON.parse(localStorage.getItem('purchase_records') || '[]');
+            records = await apiRequest('/api/records');
+            renderGrid();
         } catch (error) {
-            alert('本地数据读取失败，页面会先用空数据打开。旧数据还在浏览器里，建议先不要清缓存。');
-            return [];
+            document.getElementById('productGrid').innerHTML =
+                `<div class="empty-state"><div class="empty-icon">!</div><div class="empty-text">数据库连接失败，请确认后端服务已启动</div></div>`;
+            console.error(error);
         }
     }
 
-    // 初始化默认数据
-    if (records.length === 0) {
-        const defaults = [
-            { name: '白套装 蓝毛衣三件套', platform: '淘宝', orderNo: 'TA20250101001', price: 200.00, quantity: 1, status: '待发货', date: '2025-01-01', note: '娃衣' },
-            { name: '米白翻边打底裤', platform: '淘宝', orderNo: '', price: 53.64, quantity: 1, status: '已发货', date: '2025-01-02', note: '' },
-            { name: '牛仔背带裤', platform: '京东', orderNo: '', price: 101.84, quantity: 1, status: '已收货', date: '2025-01-03', note: '' },
-            { name: '花边打底', platform: '淘宝', orderNo: '', price: 51.44, quantity: 1, status: '待付款', date: '2025-01-04', note: '' },
-            { name: '低领蓝色打底', platform: '淘宝', orderNo: '', price: 44.24, quantity: 1, status: '已购买', date: '2025-01-05', note: '' },
-            { name: '低领杏色打底', platform: '淘宝', orderNo: '', price: 44.24, quantity: 1, status: '已购买', date: '2025-01-05', note: '' },
-            { name: '黄色家居服', platform: '拼多多', orderNo: '', price: 73.04, quantity: 1, status: '待发货', date: '2025-01-06', note: '' },
-            { name: '杏色背带裤', platform: '淘宝', orderNo: '', price: 104.00, quantity: 1, status: '已收货', date: '2025-01-07', note: '' },
-        ];
-        records = defaults.map((r, i) => ({ ...r, id: Date.now() + i }));
-        saveToStorage();
-    }
-
-    function saveToStorage() {
+    async function migrateLocalRecordsOnce() {
         try {
-            localStorage.setItem('purchase_records', JSON.stringify(records));
-            localStorage.setItem('purchase_records_saved_at', new Date().toISOString());
-            return true;
+            if (localStorage.getItem('purchase_records_migrated_to_db') === '1') return;
+            const localRecords = JSON.parse(localStorage.getItem('purchase_records') || '[]');
+            if (!Array.isArray(localRecords) || localRecords.length === 0) {
+                localStorage.setItem('purchase_records_migrated_to_db', '1');
+                return;
+            }
+            if (!confirm(`检测到浏览器里有 ${localRecords.length} 条旧记录，是否导入数据库？`)) return;
+            await apiRequest('/api/import', {
+                method: 'POST',
+                body: JSON.stringify(localRecords),
+            });
+            localStorage.setItem('purchase_records_migrated_to_db', '1');
+            await loadRecordsFromApi();
         } catch (error) {
-            alert('保存失败：浏览器本地存储空间可能满了。请先删除几张大图，或换一张更小的图片后再保存。');
-            return false;
+            alert('旧数据导入数据库失败，请稍后再试。');
+            console.error(error);
         }
     }
 
@@ -1112,7 +1122,7 @@
         updateImagePreview(imageData);
     }
 
-    function saveRecord(e) {
+    async function saveRecord(e) {
         e.preventDefault();
         const editId = document.getElementById('editId').value;
         const data = {
@@ -1128,19 +1138,24 @@
             imageData: document.getElementById('formImageData').value,
         };
 
-        if (editId) {
-            const idx = records.findIndex(x => x.id == editId);
-            if (idx >= 0) {
-                records[idx] = { ...records[idx], ...data };
+        try {
+            if (editId) {
+                await apiRequest(`/api/records/${editId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                });
+            } else {
+                await apiRequest('/api/records', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                });
             }
-        } else {
-            data.id = Date.now();
-            records.unshift(data);
+            await loadRecordsFromApi();
+            closeFormModal();
+        } catch (error) {
+            alert('保存到数据库失败，请检查后端服务。');
+            console.error(error);
         }
-
-        if (!saveToStorage()) return;
-        renderGrid();
-        closeFormModal();
     }
 
     function quickEdit(event, id) {
@@ -1184,12 +1199,16 @@
         }
     }
 
-    function deleteFromDetail() {
+    async function deleteFromDetail() {
         if (currentDetailId && confirm('确定要删除这条记录吗？')) {
-            records = records.filter(r => r.id != currentDetailId);
-            saveToStorage();
-            renderGrid();
-            closeDetailModal();
+            try {
+                await apiRequest(`/api/records/${currentDetailId}`, { method: 'DELETE' });
+                await loadRecordsFromApi();
+                closeDetailModal();
+            } catch (error) {
+                alert('从数据库删除失败，请检查后端服务。');
+                console.error(error);
+            }
         }
     }
 
@@ -1218,6 +1237,7 @@
     applyTheme(localStorage.getItem(THEME_KEY) || 'light');
     window.GMQD_VERSION = APP_VERSION;
     renderGrid();
+    loadRecordsFromApi().then(migrateLocalRecordsOnce);
 
     // 点击蒙层关闭弹窗
     document.querySelectorAll('.modal-overlay').forEach(el => {
