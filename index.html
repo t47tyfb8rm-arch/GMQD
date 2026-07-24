@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>购物清单 - 购买商品记录管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #fff8f8;
+            color: #333;
+            min-height: 100vh;
+            transition: background 0.2s, color 0.2s;
+        }
+        body.dark {
+            background-color: #161316;
+            color: #f3edf2;
+        }
+
+        /* ===== 顶部 ===== */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 16px;
+            font-size: 12px;
+            color: #333;
+            background: #fff8f8;
+        }
+        body.dark .status-bar {
+            background: #161316;
+            color: #f3edf2;
+        }
+        body.dark .status-bar .icons svg {
+            fill: #f3edf2;
+        }
+        .status-bar .time {
+            font-weight: 600;
+        }
+        .status-bar .icons {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-bar .icons svg {
+            width: 14px;
+            height: 14px;
+            fill: #333;
+        }
+
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background: #fff8f8;
+            border-bottom: 1px solid #f0e0e0;
+        }
+        body.dark .nav-bar {
+            background: #161316;
+            border-bottom-color: #332a31;
+        }
+        .nav-bar .left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-bar .left .back-btn {
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        body.dark .nav-bar .left .back-btn,
+        body.dark .nav-bar .right .action-btn {
+            color: #f3edf2;
+        }
+        .nav-bar .left .back-btn:hover {
+            background: #f0e0e0;
+        }
+        .nav-bar .logo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-bar .logo .logo-icon {
+            background: #ff4757;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .nav-bar .logo .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .nav-bar .right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-bar .right .action-btn {
+            font-size: 18px;
+            cursor: pointer;
+            color: #333;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .nav-bar .right .theme-btn {
+            border: 1px solid #f0d9e5;
+            background: #fff;
+            color: #333;
+            font-size: 14px;
+        }
+        body.dark .nav-bar .right .theme-btn {
+            border-color: #473642;
+            background: #241d23;
+            color: #f3edf2;
+        }
+        .nav-bar .right .action-btn:hover {
+            background: #f0e0e0;
+        }
+
+        /* ===== 头部信息 ===== */
+        .header-info {
+            padding: 16px 20px 12px;
+            background: #fff8f8;
+        }
+        body.dark .header-info {
+            background: #161316;
+        }
+        .header-info .title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 4px;
+        }
+        body.dark .header-info .title {
+            color: #fff;
+        }
+        .header-info .subtitle {
+            font-size: 14px;
+            color: #999;
+        }
+        .header-info .subtitle span {
+            margin-right: 12px;
+        }
+        .header-info .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0e0e0;
+            font-size: 14px;
+            color: #333;
+        }
+        body.dark .header-info .user-info {
+            border-top-color: #332a31;
+            color: #f3edf2;
+        }
+        .header-info .user-info .phone {
+            font-weight: 500;
+        }
+        .header-info .user-info .score {
+            color: #999;
+        }
+
+        /* ===== 标签切换 ===== */
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            padding: 0 20px 12px;
+            background: #fff8f8;
+            border-bottom: 1px solid #f0e0e0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        body.dark .tab-bar {
+            background: #161316;
+            border-bottom-color: #332a31;
+        }
+        .tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+        .tab-bar .tab-item {
+            flex-shrink: 0;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            border-radius: 16px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+        body.dark .tab-bar .tab-item {
+            color: #cdbfc8;
+        }
+        .tab-bar .tab-item.active {
+            background: #ff69b4;
+            color: #fff;
+        }
+        .tab-bar .tab-item:hover:not(.active) {
+            background: #ffe0ec;
+        }
+        body.dark .tab-bar .tab-item:hover:not(.active) {
+            background: #2a2028;
+        }
+
+        /* ===== 商品网格 ===== */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 12px 16px 80px;
+        }
+        .product-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        body.dark .product-card {
+            background: #211b20;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+        }
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .product-card .img-wrap {
+            position: relative;
+            width: 100%;
+            padding-top: 100%;
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+        .product-card .img-wrap img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        body.dark .product-card .img-wrap {
+            background: #2a2429;
+        }
+        .product-card .img-wrap .placeholder-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: #ddd;
+        }
+        .product-card .img-wrap .tag {
+            position: absolute;
+            top: 8px;
+            left: 0;
+            background: #ffccd5;
+            color: #ff4757;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 0 8px 8px 0;
+            font-weight: 500;
+        }
+        .product-card .card-body {
+            padding: 8px 10px 10px;
+        }
+        .product-card .card-body .name {
+            font-size: 13px;
+            color: #000;
+            font-weight: 400;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 34px;
+        }
+        body.dark .product-card .card-body .name {
+            color: #fff;
+        }
+        .product-card .card-body .price {
+            font-size: 14px;
+            color: #ff69b4;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        .product-card .card-body .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .product-card .card-body .meta .status {
+            font-size: 10px;
+            color: #999;
+        }
+        .product-card .card-body .meta .qty {
+            font-size: 10px;
+            color: #ccc;
+        }
+
+        /* ===== 底部添加按钮 ===== */
+        .add-btn-wrap {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100;
+        }
+        .add-btn-wrap .add-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #ff69b4;
+            color: #fff;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 105, 180, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .add-btn-wrap .add-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(255, 105, 180, 0.5);
+        }
+
+        /* ===== 弹窗/表单 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 200;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 16px 16px 0 0;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 20px 20px 30px;
+            animation: slideUp 0.3s ease;
+        }
+        body.dark .modal-content {
+            background: #211b20;
+            color: #f3edf2;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .modal-content .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-content .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .modal-content .modal-header .close-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        body.dark .modal-content .modal-header .close-btn {
+            background: #302730;
+            color: #f3edf2;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            font-size: 15px;
+            color: #333;
+            background: #fafafa;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        body.dark .form-group input,
+        body.dark .form-group select,
+        body.dark .form-group textarea {
+            border-color: #3b3038;
+            background: #171216;
+            color: #f3edf2;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #ff69b4;
+            background: #fff;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .form-group .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .form-group .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            padding: 4px 10px;
+            border: 1px solid #eee;
+            border-radius: 14px;
+            transition: all 0.2s;
+        }
+        .form-group .radio-group input[type="radio"] {
+            display: none;
+        }
+        .form-group .radio-group input[type="radio"]:checked + span {
+            color: #ff69b4;
+        }
+        .form-group .radio-group label:has(input:checked) {
+            border-color: #ff69b4;
+            background: #fff0f6;
+        }
+        body.dark .form-group .radio-group label {
+            border-color: #3b3038;
+            color: #d8cbd3;
+        }
+        body.dark .form-group .radio-group label:has(input:checked) {
+            background: #382332;
+        }
+        .image-uploader {
+            display: grid;
+            grid-template-columns: 86px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+        .image-preview {
+            width: 86px;
+            height: 86px;
+            border-radius: 10px;
+            background: #f5f5f5;
+            border: 1px dashed #e7cbd9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #ccc;
+            font-size: 28px;
+        }
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .image-actions input {
+            display: none;
+        }
+        .image-actions button,
+        .image-actions label {
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            background: #fff0f6;
+            color: #ff4fa8;
+        }
+        .image-actions .btn-remove-image {
+            background: #f5f5f5;
+            color: #999;
+        }
+        body.dark .image-preview {
+            background: #171216;
+            border-color: #493643;
+        }
+        body.dark .image-actions label {
+            background: #382332;
+        }
+        body.dark .image-actions .btn-remove-image {
+            background: #302730;
+            color: #d8cbd3;
+        }
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .modal-footer button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .modal-footer button:hover {
+            opacity: 0.85;
+        }
+        .modal-footer .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+        }
+        .modal-footer .btn-save {
+            background: #ff69b4;
+            color: #fff;
+        }
+
+        /* ===== 详情弹窗 ===== */
+        .detail-modal .detail-img-area {
+            width: 100%;
+            background: #f5f5f5;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            color: #ccc;
+            font-size: 40px;
+        }
+        .detail-modal .detail-img-area.has-image {
+            min-height: 260px;
+            padding: 0;
+            overflow: hidden;
+        }
+        .detail-modal .detail-img-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        body.dark .detail-modal .detail-img-area {
+            background: #171216;
+        }
+        .detail-modal .detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #000;
+        }
+        body.dark .detail-modal .detail-title,
+        body.dark .detail-modal .detail-list li .value {
+            color: #fff;
+        }
+        .detail-modal .detail-list {
+            list-style: none;
+        }
+        .detail-modal .detail-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+        }
+        body.dark .detail-modal .detail-list li {
+            border-bottom-color: #332a31;
+        }
+        .detail-modal .detail-list li .icon {
+            width: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 16px;
+        }
+        .detail-modal .detail-list li .label {
+            color: #999;
+            min-width: 56px;
+        }
+        .detail-modal .detail-list li .value {
+            color: #000;
+            flex: 1;
+            text-align: right;
+        }
+        .detail-modal .detail-list li .value.price {
+            color: #ff69b4;
+            font-weight: 500;
+        }
+        .detail-modal .detail-list li .value .sub {
+            display: block;
+            font-size: 12px;
+            color: #999;
+            font-weight: 400;
+        }
+        .detail-modal .detail-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .detail-modal .detail-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .detail-modal .detail-actions button:hover {
+            opacity: 0.85;
+        }
+        .detail-modal .detail-actions .btn-edit {
+            background: #ff69b4;
+            color: #fff;
+        }
+        .detail-modal .detail-actions .btn-delete {
+            background: #f5f5f5;
+            color: #ff4757;
+        }
+        body.dark .detail-modal .detail-actions .btn-delete {
+            background: #302730;
+        }
+
+        /* ===== 空状态 ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #ccc;
+        }
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .empty-state .empty-text {
+            font-size: 14px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 400px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                padding: 10px 12px 70px;
+            }
+            .header-info .title {
+                font-size: 20px;
+            }
+        }
+        @media (min-width: 600px) {
+            .product-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        @media (min-width: 900px) {
+            .product-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== 状态栏 ===== -->
+<div class="status-bar">
+    <span class="time" id="statusTime">21:10</span>
+    <span class="icons">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.5-13v4h-5v2h5v4l5-5z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        <span style="font-size:11px;font-weight:600;">63</span>
+    </span>
+</div>
+
+<!-- ===== 导航栏 ===== -->
+<div class="nav-bar">
+    <div class="left">
+        <span class="back-btn" onclick="history.back()">←</span>
+        <div class="logo">
+            <span class="logo-icon">购</span>
+            <span class="logo-text">购物清单</span>
+        </div>
+    </div>
+    <div class="right">
+        <span class="action-btn theme-btn" id="themeToggle" onclick="toggleTheme()" title="深色模式">☾</span>
+        <span class="action-btn" onclick="toggleView()" title="切换视图">⊞</span>
+        <span class="action-btn" onclick="openAddModal()" title="编辑">✎</span>
+    </div>
+</div>
+
+<!-- ===== 头部信息 ===== -->
+<div class="header-info">
+    <div class="title">购物清单</div>
+    <div class="subtitle">
+        <span id="totalCount">已收录 0</span>
+        <span id="totalPrice">总价 ¥0.00</span>
+    </div>
+    <div class="user-info">
+        <span class="phone">183****1521</span>
+        <span class="score">人气值 0</span>
+    </div>
+</div>
+
+<!-- ===== 标签切换 ===== -->
+<div class="tab-bar" id="tabBar">
+    <div class="tab-item active" data-status="">全部状态</div>
+    <div class="tab-item" data-status="待付款">待付款</div>
+    <div class="tab-item" data-status="已购买">已购买</div>
+    <div class="tab-item" data-status="待发货">待发货</div>
+    <div class="tab-item" data-status="已发货">已发货</div>
+    <div class="tab-item" data-status="已收货">已收货</div>
+    <div class="tab-item" data-status="已取消">已取消</div>
+</div>
+
+<!-- ===== 商品网格 ===== -->
+<div class="product-grid" id="productGrid">
+    <!-- 由 JS 动态渲染 -->
+</div>
+
+<!-- ===== 底部添加按钮 ===== -->
+<div class="add-btn-wrap">
+    <button class="add-btn" onclick="openAddModal()">+</button>
+</div>
+
+<!-- ===== 新增/编辑弹窗 ===== -->
+<div class="modal-overlay" id="formModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="formModalTitle">新增记录</h3>
+            <button class="close-btn" onclick="closeFormModal()">✕</button>
+        </div>
+        <form id="recordForm" onsubmit="saveRecord(event)">
+            <input type="hidden" id="editId" value="">
+            <input type="hidden" id="formImageData" value="">
+            <div class="form-group">
+                <label>商品图片</label>
+                <div class="image-uploader">
+                    <div class="image-preview" id="imagePreview">🛍</div>
+                    <div class="image-actions">
+                        <label for="formImage">上传图片</label>
+                        <input type="file" id="formImage" accept="image/*" onchange="handleImageUpload(event)">
+                        <button type="button" class="btn-remove-image" onclick="clearImage()">移除图片</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>商品名称 *</label>
+                <input type="text" id="formName" required placeholder="输入商品名称">
+            </div>
+            <div class="form-group">
+                <label>购买平台</label>
+                <input type="text" id="formPlatform" placeholder="如：淘宝、京东">
+            </div>
+            <div class="form-group">
+                <label>订单号</label>
+                <input type="text" id="formOrderNo" placeholder="输入订单号">
+            </div>
+            <div class="form-group">
+                <label>单价 (¥)</label>
+                <input type="number" id="formPrice" step="0.01" min="0" required placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>数量</label>
+                <input type="number" id="formQuantity" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label>状态</label>
+                <div class="radio-group" id="formStatusGroup">
+                    <label><input type="radio" name="formStatus" value="待付款" checked><span>待付款</span></label>
+                    <label><input type="radio" name="formStatus" value="已购买"><span>已购买</span></label>
+                    <label><input type="radio" name="formStatus" value="待发货"><span>待发货</span></label>
+                    <label><input type="radio" name="formStatus" value="已发货"><span>已发货</span></label>
+                    <label><input type="radio" name="formStatus" value="已收货"><span>已收货</span></label>
+                    <label><input type="radio" name="formStatus" value="已取消"><span>已取消</span></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>购买日期</label>
+                <input type="date" id="formDate">
+            </div>
+            <div class="form-group">
+                <label>备注</label>
+                <textarea id="formNote" placeholder="添加备注..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeFormModal()">取消</button>
+                <button type="submit" class="btn-save">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== 详情弹窗 ===== -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal-content detail-modal">
+        <div class="modal-header">
+            <h3>商品详情</h3>
+            <button class="close-btn" onclick="closeDetailModal()">✕</button>
+        </div>
+        <div class="detail-img-area">🛍</div>
+        <div class="detail-title" id="detailTitle">—</div>
+        <ul class="detail-list" id="detailList">
+        </ul>
+        <div class="detail-actions">
+            <button class="btn-edit" onclick="editFromDetail()">编辑</button>
+            <button class="btn-delete" onclick="deleteFromDetail()">删除</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== 数据管理 =====
+    let records = JSON.parse(localStorage.getItem('purchase_records') || '[]');
+    let currentFilter = '';
+    let currentDetailId = null;
+    const THEME_KEY = 'shopping_list_theme';
+
+    // 初始化默认数据
+    if (records.length === 0) {
+        const defaults = [
+            { name: '白套装 蓝毛衣三件套', platform: '淘宝', orderNo: 'TA20250101001', price: 200.00, quantity: 1, status: '待发货', date: '2025-01-01', note: '娃衣' },
+            { name: '米白翻边打底裤', platform: '淘宝', orderNo: '', price: 53.64, quantity: 1, status: '已发货', date: '2025-01-02', note: '' },
+            { name: '牛仔背带裤', platform: '京东', orderNo: '', price: 101.84, quantity: 1, status: '已收货', date: '2025-01-03', note: '' },
+            { name: '花边打底', platform: '淘宝', orderNo: '', price: 51.44, quantity: 1, status: '待付款', date: '2025-01-04', note: '' },
+            { name: '低领蓝色打底', platform: '淘宝', orderNo: '', price: 44.24, quantity: 1, status: '已购买', date: '2025-01-05', note: '' },
+            { name: '低领杏色打底', platform: '淘宝', orderNo: '', price: 44.24, quantity: 1, status: '已购买', date: '2025-01-05', note: '' },
+            { name: '黄色家居服', platform: '拼多多', orderNo: '', price: 73.04, quantity: 1, status: '待发货', date: '2025-01-06', note: '' },
+            { name: '杏色背带裤', platform: '淘宝', orderNo: '', price: 104.00, quantity: 1, status: '已收货', date: '2025-01-07', note: '' },
+        ];
+        records = defaults.map((r, i) => ({ ...r, id: Date.now() + i }));
+        saveToStorage();
+    }
+
+    function saveToStorage() {
+        localStorage.setItem('purchase_records', JSON.stringify(records));
+    }
+
+    function applyTheme(theme) {
+        const isDark = theme === 'dark';
+        document.body.classList.toggle('dark', isDark);
+        const btn = document.getElementById('themeToggle');
+        if (btn) {
+            btn.textContent = isDark ? '☀' : '☾';
+            btn.title = isDark ? '浅色模式' : '深色模式';
+        }
+    }
+
+    function toggleTheme() {
+        const nextTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+        localStorage.setItem(THEME_KEY, nextTheme);
+        applyTheme(nextTheme);
+    }
+
+    function getFilteredRecords() {
+        if (!currentFilter) return records;
+        return records.filter(r => r.status === currentFilter);
+    }
+
+    function updateStats() {
+        const total = records.length;
+        const totalPrice = records.reduce((s, r) => s + r.price * r.quantity, 0);
+        document.getElementById('totalCount').textContent = `已收录 ${total}`;
+        document.getElementById('totalPrice').textContent = `总价 ¥${totalPrice.toFixed(2)}`;
+    }
+
+    // ===== 渲染商品网格 =====
+    function renderGrid() {
+        const grid = document.getElementById('productGrid');
+        const filtered = getFilteredRecords();
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">还没有记录，点击 + 添加</div></div>`;
+            return;
+        }
+
+        grid.innerHTML = filtered.map(r => `
+            <div class="product-card" onclick="openDetail('${r.id}')">
+                <div class="img-wrap">
+                    ${r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '<div class="placeholder-icon">🛍</div>'}
+                    ${r.status ? `<div class="tag">${r.status}</div>` : ''}
+                </div>
+                <div class="card-body">
+                    <div class="name">${escapeHtml(r.name)}</div>
+                    <div class="price">¥${r.price.toFixed(2)}</div>
+                    <div class="meta">
+                        <span class="status">${r.platform || '其他'}</span>
+                        <span class="qty">×${r.quantity}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        updateStats();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ===== 标签切换 =====
+    document.getElementById('tabBar').addEventListener('click', (e) => {
+        const tab = e.target.closest('.tab-item');
+        if (!tab) return;
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.status || '';
+        renderGrid();
+    });
+
+    // ===== 新增/编辑弹窗 =====
+    function openAddModal() {
+        document.getElementById('formModalTitle').textContent = '新增记录';
+        document.getElementById('editId').value = '';
+        document.getElementById('formImageData').value = '';
+        document.getElementById('formImage').value = '';
+        updateImagePreview('');
+        document.getElementById('formName').value = '';
+        document.getElementById('formPlatform').value = '';
+        document.getElementById('formOrderNo').value = '';
+        document.getElementById('formPrice').value = '';
+        document.getElementById('formQuantity').value = '1';
+        document.querySelector('input[name="formStatus"][value="待付款"]').checked = true;
+        document.getElementById('formDate').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('formNote').value = '';
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function openEditModal(id) {
+        const r = records.find(x => x.id == id);
+        if (!r) return;
+        document.getElementById('formModalTitle').textContent = '编辑记录';
+        document.getElementById('editId').value = r.id;
+        document.getElementById('formName').value = r.name;
+        document.getElementById('formPlatform').value = r.platform || '';
+        document.getElementById('formOrderNo').value = r.orderNo || '';
+        document.getElementById('formPrice').value = r.price;
+        document.getElementById('formQuantity').value = r.quantity;
+        const statusInput = document.querySelector(`input[name="formStatus"][value="${r.status}"]`);
+        if (statusInput) statusInput.checked = true;
+        document.getElementById('formImageData').value = r.imageData || '';
+        document.getElementById('formImage').value = '';
+        updateImagePreview(r.imageData || '');
+        document.getElementById('formDate').value = r.date || '';
+        document.getElementById('formNote').value = r.note || '';
+        document.getElementById('formModal').classList.add('active');
+    }
+
+    function closeFormModal() {
+        document.getElementById('formModal').classList.remove('active');
+    }
+
+    function updateImagePreview(src) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = src ? `<img src="${src}" alt="商品图片预览">` : '🛍';
+    }
+
+    function clearImage() {
+        document.getElementById('formImageData').value = '';
+        document.getElementById('formImage').value = '';
+        updateImagePreview('');
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function resizeImage(dataUrl, maxSize = 900, quality = 0.82) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                let { width, height } = img;
+                if (width > maxSize || height > maxSize) {
+                    const scale = Math.min(maxSize / width, maxSize / height);
+                    width = Math.round(width * scale);
+                    height = Math.round(height * scale);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = () => resolve(dataUrl);
+            img.src = dataUrl;
+        });
+    }
+
+    async function handleImageUpload(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('请选择图片文件');
+            event.target.value = '';
+            return;
+        }
+        const rawData = await readFileAsDataURL(file);
+        const imageData = await resizeImage(rawData);
+        document.getElementById('formImageData').value = imageData;
+        updateImagePreview(imageData);
+    }
+
+    function saveRecord(e) {
+        e.preventDefault();
+        const editId = document.getElementById('editId').value;
+        const data = {
+            name: document.getElementById('formName').value.trim(),
+            platform: document.getElementById('formPlatform').value.trim(),
+            orderNo: document.getElementById('formOrderNo').value.trim(),
+            price: parseFloat(document.getElementById('formPrice').value) || 0,
+            quantity: parseInt(document.getElementById('formQuantity').value) || 1,
+            status: document.querySelector('input[name="formStatus"]:checked').value,
+            date: document.getElementById('formDate').value,
+            note: document.getElementById('formNote').value.trim(),
+            imageData: document.getElementById('formImageData').value,
+        };
+
+        if (editId) {
+            const idx = records.findIndex(x => x.id == editId);
+            if (idx >= 0) {
+                records[idx] = { ...records[idx], ...data };
+            }
+        } else {
+            data.id = Date.now();
+            records.unshift(data);
+        }
+
+        saveToStorage();
+        renderGrid();
+        closeFormModal();
+    }
+
+    // ===== 详情弹窗 =====
+    function openDetail(id) {
+        const r = records.find(x => x.id == id);
+        if (!r) return;
+        currentDetailId = r.id;
+        document.getElementById('detailTitle').textContent = r.name;
+        const detailImage = document.querySelector('.detail-img-area');
+        detailImage.classList.toggle('has-image', !!r.imageData);
+        detailImage.innerHTML = r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '🛍';
+        const list = document.getElementById('detailList');
+        list.innerHTML = `
+            <li><span class="icon">▤</span><span class="label">类型</span><span class="value">${escapeHtml(r.note || '—')}</span></li>
+            <li><span class="icon">N</span><span class="label">数量</span><span class="value">${r.quantity}</span></li>
+            <li><span class="icon">📄</span><span class="label">属性</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
+            <li><span class="icon">♥</span><span class="label">拥有状态</span><span class="value">${r.status}</span></li>
+            <li><span class="icon">¥</span><span class="label">单价</span><span class="value price">¥${r.price.toFixed(2)}</span></li>
+            <li><span class="icon">📏</span><span class="label">尺寸</span><span class="value">—</span></li>
+            <li><span class="icon">👥</span><span class="label">购买渠道</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
+        `;
+        document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('active');
+        currentDetailId = null;
+    }
+
+    function editFromDetail() {
+        if (currentDetailId) {
+            closeDetailModal();
+            openEditModal(currentDetailId);
+        }
+    }
+
+    function deleteFromDetail() {
+        if (currentDetailId && confirm('确定要删除这条记录吗？')) {
+            records = records.filter(r => r.id != currentDetailId);
+            saveToStorage();
+            renderGrid();
+            closeDetailModal();
+        }
+    }
+
+    // ===== 切换视图（保留功能） =====
+    let isGridView = true;
+    function toggleView() {
+        isGridView = !isGridView;
+        const grid = document.getElementById('productGrid');
+        if (isGridView) {
+            grid.style.display = 'grid';
+        } else {
+            grid.style.display = 'block';
+        }
+    }
+
+    // ===== 初始化 =====
+    function updateTime() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('statusTime').textContent = `${h}:${m}`;
+    }
+    updateTime();
+    setInterval(updateTime, 30000);
+
+    applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+    renderGrid();
+
+    // 点击蒙层关闭弹窗
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', (e) => {
+            if (e.target === el) {
+                el.classList.remove('active');
+            }
+        });
+    });
+</script>
+</body>
+</html>
