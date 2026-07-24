@@ -494,6 +494,80 @@
         body.dark .checkbox-line {
             color: #d8cbd3;
         }
+        .payment-summary-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .payment-summary-text {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .payment-summary-box button,
+        .payment-editor-actions button {
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            background: #fff0f6;
+            color: #ff4fa8;
+            white-space: nowrap;
+        }
+        .payment-editor-list {
+            display: grid;
+            gap: 10px;
+        }
+        .payment-editor-row {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 32px;
+            gap: 8px;
+            align-items: center;
+        }
+        .payment-editor-row select,
+        .payment-editor-row input {
+            width: 100%;
+            padding: 10px 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #fafafa;
+            color: #333;
+            font-size: 14px;
+        }
+        .payment-editor-row .remove-payment {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: #f5f5f5;
+            color: #ff4757;
+            cursor: pointer;
+        }
+        .payment-editor-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        body.dark .payment-summary-box,
+        body.dark .payment-editor-row select,
+        body.dark .payment-editor-row input {
+            border-color: #3b3038;
+            background: #171216;
+            color: #f3edf2;
+        }
+        body.dark .payment-summary-text {
+            color: #f3edf2;
+        }
+        body.dark .payment-editor-row .remove-payment {
+            background: #302730;
+        }
         .form-group .radio-group {
             display: flex;
             flex-wrap: wrap;
@@ -808,6 +882,9 @@
         <form id="recordForm" onsubmit="saveRecord(event)">
             <input type="hidden" id="editId" value="">
             <input type="hidden" id="formImageData" value="">
+            <input type="hidden" id="formDepositAmount" value="">
+            <input type="hidden" id="formBalanceAmount" value="">
+            <input type="hidden" id="formShippingAmount" value="">
             <div class="form-group">
                 <label>商品图片</label>
                 <div class="image-uploader">
@@ -850,25 +927,15 @@
                     <input type="number" id="formQuantity" min="1" value="1" required>
                 </div>
                 <div class="form-group">
-                    <label>金额 (¥)</label>
-                    <input type="number" id="formPrice" step="0.01" min="0" placeholder="0.00">
+                    <label>合计金额 (¥)</label>
+                    <input type="number" id="formPrice" step="0.01" min="0" placeholder="付款明细汇总" readonly onclick="openPaymentModal()">
                 </div>
             </div>
             <div class="form-group">
                 <label>付款明细</label>
-                <div class="form-row payment-input-row">
-                    <div>
-                        <label>定金</label>
-                        <input type="number" id="formDepositAmount" step="0.01" min="0" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label>尾款</label>
-                        <input type="number" id="formBalanceAmount" step="0.01" min="0" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label>运费</label>
-                        <input type="number" id="formShippingAmount" step="0.01" min="0" placeholder="0.00">
-                    </div>
+                <div class="payment-summary-box">
+                    <span class="payment-summary-text" id="paymentSummaryText">未录入付款</span>
+                    <button type="button" onclick="openPaymentModal()">编辑</button>
                 </div>
             </div>
             <div class="form-group">
@@ -897,6 +964,21 @@
     </div>
 </div>
 
+<!-- ===== 付款明细弹窗 ===== -->
+<div class="modal-overlay" id="paymentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>付款明细</h3>
+            <button class="close-btn" onclick="closePaymentModal()">✕</button>
+        </div>
+        <div class="payment-editor-list" id="paymentEditorList"></div>
+        <div class="payment-editor-actions">
+            <button type="button" onclick="addPaymentRow()">添加一笔</button>
+            <button type="button" onclick="savePaymentModal()">确定</button>
+        </div>
+    </div>
+</div>
+
 <!-- ===== 详情弹窗 ===== -->
 <div class="modal-overlay" id="detailModal">
     <div class="modal-content detail-modal">
@@ -917,7 +999,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-db-photo-cards';
+    const APP_VERSION = '20260725-db-payment-modal';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -1061,6 +1143,7 @@
         document.getElementById('formDepositAmount').value = '';
         document.getElementById('formBalanceAmount').value = '';
         document.getElementById('formShippingAmount').value = '';
+        refreshPaymentSummary();
         document.getElementById('formQuantity').value = '1';
         document.querySelector('input[name="formStatus"][value="待付款"]').checked = true;
         document.getElementById('formDate').value = new Date().toISOString().slice(0, 10);
@@ -1081,6 +1164,7 @@
         document.getElementById('formDepositAmount').value = Number(r.depositAmount || 0) || '';
         document.getElementById('formBalanceAmount').value = Number(r.balanceAmount || 0) || '';
         document.getElementById('formShippingAmount').value = Number(r.shippingAmount || 0) || '';
+        refreshPaymentSummary();
         document.getElementById('formQuantity').value = r.quantity;
         const statusInput = document.querySelector(`input[name="formStatus"][value="${r.status}"]`);
         if (statusInput) statusInput.checked = true;
@@ -1109,6 +1193,98 @@
         document.getElementById('formImageData').value = '';
         document.getElementById('formImage').value = '';
         updateImagePreview('');
+    }
+
+    function paymentInputsToItems() {
+        const items = [];
+        const deposit = parseFloat(document.getElementById('formDepositAmount').value) || 0;
+        const balance = parseFloat(document.getElementById('formBalanceAmount').value) || 0;
+        const shipping = parseFloat(document.getElementById('formShippingAmount').value) || 0;
+        const fallback = parseFloat(document.getElementById('formPrice').value) || 0;
+        if (deposit > 0) items.push({ type: '定金', amount: deposit });
+        if (balance > 0) items.push({ type: '尾款', amount: balance });
+        if (shipping > 0) items.push({ type: '运费', amount: shipping });
+        if (items.length === 0 && fallback > 0) items.push({ type: '正常', amount: fallback });
+        return items;
+    }
+
+    function applyPaymentItems(items) {
+        let deposit = 0;
+        let balance = 0;
+        let shipping = 0;
+        let normal = 0;
+        items.forEach(item => {
+            const amount = parseFloat(item.amount) || 0;
+            if (amount <= 0) return;
+            if (item.type === '定金') deposit += amount;
+            else if (item.type === '尾款') balance += amount;
+            else if (item.type === '运费') shipping += amount;
+            else normal += amount;
+        });
+        document.getElementById('formDepositAmount').value = deposit || '';
+        document.getElementById('formBalanceAmount').value = balance || '';
+        document.getElementById('formShippingAmount').value = shipping || '';
+        document.getElementById('formPrice').value = (deposit + balance + shipping + normal) || '';
+        refreshPaymentSummary();
+    }
+
+    function refreshPaymentSummary() {
+        const summary = document.getElementById('paymentSummaryText');
+        if (!summary) return;
+        const items = paymentInputsToItems();
+        if (!items.length) {
+            summary.textContent = '未录入付款';
+            return;
+        }
+        const total = items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        const label = items.map(item => `${item.type}${Number(item.amount).toFixed(0)}`).join(' + ');
+        summary.textContent = `${label} = ¥${total.toFixed(2)}`;
+    }
+
+    function paymentRowTemplate(item = { type: '定金', amount: '' }) {
+        return `
+            <div class="payment-editor-row">
+                <select class="payment-kind">
+                    <option value="定金" ${item.type === '定金' ? 'selected' : ''}>定金</option>
+                    <option value="尾款" ${item.type === '尾款' ? 'selected' : ''}>尾款</option>
+                    <option value="运费" ${item.type === '运费' ? 'selected' : ''}>运费</option>
+                    <option value="正常" ${item.type === '正常' ? 'selected' : ''}>正常</option>
+                </select>
+                <input class="payment-amount" type="number" step="0.01" min="0" placeholder="金额" value="${item.amount || ''}">
+                <button type="button" class="remove-payment" onclick="removePaymentRow(this)">×</button>
+            </div>
+        `;
+    }
+
+    function openPaymentModal() {
+        const list = document.getElementById('paymentEditorList');
+        const items = paymentInputsToItems();
+        list.innerHTML = (items.length ? items : [{ type: '定金', amount: '' }])
+            .map(item => paymentRowTemplate(item))
+            .join('');
+        document.getElementById('paymentModal').classList.add('active');
+    }
+
+    function closePaymentModal() {
+        document.getElementById('paymentModal').classList.remove('active');
+    }
+
+    function addPaymentRow() {
+        document.getElementById('paymentEditorList').insertAdjacentHTML('beforeend', paymentRowTemplate());
+    }
+
+    function removePaymentRow(button) {
+        button.closest('.payment-editor-row').remove();
+    }
+
+    function savePaymentModal() {
+        const rows = Array.from(document.querySelectorAll('#paymentEditorList .payment-editor-row'));
+        const items = rows.map(row => ({
+            type: row.querySelector('.payment-kind').value,
+            amount: parseFloat(row.querySelector('.payment-amount').value) || 0,
+        })).filter(item => item.amount > 0);
+        applyPaymentItems(items);
+        closePaymentModal();
     }
 
     function readFileAsDataURL(file) {
