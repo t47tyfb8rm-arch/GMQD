@@ -1,8 +1,8 @@
 # GMQD
 
-购物记录管理单页应用。
+购物记录管理系统。
 
-当前版本是一个纯静态 HTML 应用，所有记录保存在浏览器 `localStorage` 中，不依赖后端服务。
+当前版本是 FastAPI + SQLite 后端，记录和图片都保存在服务器数据库中。
 
 ## 功能
 
@@ -17,12 +17,16 @@
 
 ## 本地运行
 
-直接用浏览器打开 `index.html` 即可。
-
-也可以用 Python 启动一个本地静态服务：
+安装依赖：
 
 ```bash
-python -m http.server 8080
+pip install -r backend/requirements.txt
+```
+
+启动服务：
+
+```bash
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8080
 ```
 
 然后访问：
@@ -33,16 +37,16 @@ http://localhost:8080/
 
 ## 数据说明
 
-记录和图片保存在当前浏览器的 `localStorage.purchase_records` 中。图片会在浏览器内压缩后以 Data URL 保存。
+记录和图片保存在服务器 SQLite 数据库 `data/purchase_records.sqlite3` 中。图片会在浏览器内压缩后上传到后端保存。
 
 这意味着：
 
-- 换浏览器或换设备不会同步数据
-- 清理浏览器缓存可能导致数据丢失
+- 换浏览器或换设备访问同一个服务器，会看到同一份数据
+- 清理浏览器缓存不会删除购物记录
 - 图片会自动压缩；如果仍触发浏览器本地存储容量限制，保存时会提示
-- 当前版本没有云端备份和多人共享能力
+- 需要定期备份服务器上的 `data/purchase_records.sqlite3`
 
-如果要长期使用，建议后续增加导入/导出 JSON，或接入 SQLite/FastAPI 等后端存储。
+首次打开新版时，如果浏览器里还有旧 `localStorage` 数据，页面会提示是否导入数据库。
 
 ## 当前线上地址
 
@@ -50,7 +54,7 @@ http://localhost:8080/
 http://124.221.184.106:8080/
 ```
 
-线上服务目前是静态 HTML 页面，建议正式部署时使用 Nginx 或 Caddy，并明确设置 UTF-8 响应头。
+线上服务需要运行 FastAPI 后端，不再建议使用 `python -m http.server` 静态服务。
 
 ## 已知问题
 
