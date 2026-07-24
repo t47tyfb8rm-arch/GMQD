@@ -776,12 +776,21 @@
                 <input type="text" id="formPlatform" placeholder="如：淘宝、京东">
             </div>
             <div class="form-group">
-                <label>订单号</label>
-                <input type="text" id="formOrderNo" placeholder="输入订单号">
+                <label>尺码</label>
+                <input type="text" id="formOrderNo" placeholder="如：M、L、娃衣尺寸">
             </div>
             <div class="form-group">
                 <label>单价 (¥)</label>
                 <input type="number" id="formPrice" step="0.01" min="0" required placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>付款分类</label>
+                <div class="radio-group" id="formPaymentTypeGroup">
+                    <label><input type="radio" name="formPaymentType" value="正常" checked><span>正常</span></label>
+                    <label><input type="radio" name="formPaymentType" value="定金"><span>定金</span></label>
+                    <label><input type="radio" name="formPaymentType" value="尾款"><span>尾款</span></label>
+                    <label><input type="radio" name="formPaymentType" value="运费"><span>运费</span></label>
+                </div>
             </div>
             <div class="form-group">
                 <label>数量</label>
@@ -834,7 +843,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260724-db-yuzi-closet';
+    const APP_VERSION = '20260724-db-size-payment-type';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -920,7 +929,7 @@
                     <div class="price">¥${r.price.toFixed(2)}</div>
                     <div class="meta">
                         <span class="status">${escapeHtml(r.brand || r.platform || '其他')}</span>
-                        <span class="qty">×${r.quantity}</span>
+                        <span class="qty">${escapeHtml(r.paymentType || '正常')} ×${r.quantity}</span>
                     </div>
                 </div>
             </div>
@@ -958,6 +967,7 @@
         document.getElementById('formOrderNo').value = '';
         document.getElementById('formPrice').value = '';
         document.getElementById('formQuantity').value = '1';
+        document.querySelector('input[name="formPaymentType"][value="正常"]').checked = true;
         document.querySelector('input[name="formStatus"][value="待付款"]').checked = true;
         document.getElementById('formDate').value = new Date().toISOString().slice(0, 10);
         document.getElementById('formNote').value = '';
@@ -975,6 +985,8 @@
         document.getElementById('formOrderNo').value = r.orderNo || '';
         document.getElementById('formPrice').value = r.price;
         document.getElementById('formQuantity').value = r.quantity;
+        const paymentTypeInput = document.querySelector(`input[name="formPaymentType"][value="${r.paymentType || '正常'}"]`);
+        if (paymentTypeInput) paymentTypeInput.checked = true;
         const statusInput = document.querySelector(`input[name="formStatus"][value="${r.status}"]`);
         if (statusInput) statusInput.checked = true;
         document.getElementById('formImageData').value = r.imageData || '';
@@ -1057,6 +1069,7 @@
             brand: getBrandValue(),
             platform: document.getElementById('formPlatform').value.trim(),
             orderNo: document.getElementById('formOrderNo').value.trim(),
+            paymentType: document.querySelector('input[name="formPaymentType"]:checked').value,
             price: parseFloat(document.getElementById('formPrice').value) || 0,
             quantity: parseInt(document.getElementById('formQuantity').value) || 1,
             status: document.querySelector('input[name="formStatus"]:checked').value,
@@ -1104,9 +1117,10 @@
             <li><span class="icon">▤</span><span class="label">类型</span><span class="value">${escapeHtml(r.note || '—')}</span></li>
             <li><span class="icon">🏷</span><span class="label">品牌</span><span class="value">${escapeHtml(r.brand || '—')}</span></li>
             <li><span class="icon">N</span><span class="label">数量</span><span class="value">${r.quantity}</span></li>
+            <li><span class="icon">📏</span><span class="label">尺码</span><span class="value">${escapeHtml(r.orderNo || '—')}</span></li>
             <li><span class="icon">♥</span><span class="label">拥有状态</span><span class="value">${r.status}</span></li>
+            <li><span class="icon">票</span><span class="label">付款分类</span><span class="value">${escapeHtml(r.paymentType || '正常')}</span></li>
             <li><span class="icon">¥</span><span class="label">单价</span><span class="value price">¥${r.price.toFixed(2)}</span></li>
-            <li><span class="icon">📏</span><span class="label">尺寸</span><span class="value">—</span></li>
             <li><span class="icon">👥</span><span class="label">购买渠道</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
         `;
         document.getElementById('detailModal').classList.add('active');
