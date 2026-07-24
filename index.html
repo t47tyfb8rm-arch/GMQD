@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-            background-color: #fff8f8;
+            background-color: #fff7fa;
             color: #333;
             min-height: 100vh;
             transition: background 0.2s, color 0.2s;
@@ -127,7 +127,7 @@
         /* ===== 头部信息 ===== */
         .header-info {
             padding: 16px 20px 12px;
-            background: #fff8f8;
+            background: #fff7fa;
         }
         body.dark .header-info {
             background: #161316;
@@ -153,7 +153,7 @@
             display: flex;
             gap: 0;
             padding: 0 20px 12px;
-            background: #fff8f8;
+            background: #fff7fa;
             border-bottom: 1px solid #f0e0e0;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -197,8 +197,8 @@
             column-gap: 18px;
             row-gap: 26px;
             padding: 28px 34px 96px;
-            background: #fff;
-            border-radius: 22px 22px 0 0;
+            background: #fff7fa;
+            border-radius: 0;
         }
         .product-card {
             background: transparent;
@@ -220,7 +220,7 @@
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: #f5f5f5;
+            background: #fff;
             overflow: hidden;
             border-radius: 18px;
         }
@@ -463,6 +463,7 @@
         .form-group textarea {
             width: 100%;
             padding: 8px 10px;
+            min-height: 36px;
             border: 1px solid #eee;
             border-radius: 8px;
             font-size: 14px;
@@ -495,7 +496,7 @@
             align-items: start;
         }
         .form-row.two-col {
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .form-row label {
             display: block;
@@ -549,18 +550,21 @@
         }
         .payment-editor-list {
             display: grid;
-            gap: 10px;
+            gap: 12px;
+            max-height: 52vh;
+            overflow-y: auto;
+            padding-right: 2px;
         }
         .payment-editor-row {
             display: grid;
-            grid-template-columns: 1fr 1.2fr 32px;
-            gap: 8px;
+            grid-template-columns: 96px minmax(0, 1fr) 36px;
+            gap: 10px;
             align-items: center;
         }
         .payment-editor-row select,
         .payment-editor-row input {
             width: 100%;
-            padding: 10px 10px;
+            padding: 12px 10px;
             border: 1px solid #eee;
             border-radius: 8px;
             background: #fafafa;
@@ -568,8 +572,8 @@
             font-size: 14px;
         }
         .payment-editor-row .remove-payment {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border: none;
             border-radius: 50%;
             background: #f5f5f5;
@@ -582,6 +586,22 @@
             gap: 10px;
             margin-top: 14px;
         }
+        .payment-modal-content {
+            max-width: 620px;
+            max-height: 92vh;
+            padding: 16px 16px 20px;
+        }
+        .payment-total-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #fff0f6;
+            color: #ff4fa8;
+            font-weight: 700;
+        }
         body.dark .payment-summary-box,
         body.dark .payment-editor-row select,
         body.dark .payment-editor-row input {
@@ -591,6 +611,10 @@
         }
         body.dark .payment-summary-text {
             color: #f3edf2;
+        }
+        body.dark .payment-total-line {
+            background: #382332;
+            color: #ff8bc8;
         }
         body.dark .payment-editor-row .remove-payment {
             background: #302730;
@@ -859,6 +883,10 @@
             .form-row.two-col {
                 grid-template-columns: 1fr 1fr;
             }
+            .payment-editor-row {
+                grid-template-columns: 84px minmax(0, 1fr) 34px;
+                gap: 8px;
+            }
         }
         @media (min-width: 600px) {
             .product-grid {
@@ -918,6 +946,7 @@
             <input type="hidden" id="formDepositAmount" value="">
             <input type="hidden" id="formBalanceAmount" value="">
             <input type="hidden" id="formShippingAmount" value="">
+            <input type="hidden" id="formPaymentItems" value="">
             <div class="form-group">
                 <label>商品图片</label>
                 <div class="image-uploader">
@@ -1003,12 +1032,16 @@
 
 <!-- ===== 付款明细弹窗 ===== -->
 <div class="modal-overlay" id="paymentModal">
-    <div class="modal-content">
+    <div class="modal-content payment-modal-content">
         <div class="modal-header">
             <h3>付款明细</h3>
             <button class="close-btn" onclick="closePaymentModal()">✕</button>
         </div>
         <div class="payment-editor-list" id="paymentEditorList"></div>
+        <div class="payment-total-line">
+            <span>合计</span>
+            <span id="paymentEditorTotal">¥0.00</span>
+        </div>
         <div class="payment-editor-actions">
             <button type="button" onclick="addPaymentRow()">添加一笔</button>
             <button type="button" onclick="savePaymentModal()">确定</button>
@@ -1036,7 +1069,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-db-weidian-grid';
+    const APP_VERSION = '20260725-payment-lines-layout';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -1139,6 +1172,15 @@
     }
 
     function paymentLabel(record) {
+        if (Array.isArray(record.paymentItems) && record.paymentItems.length) {
+            const items = record.paymentItems
+                .map(item => ({ type: item.type || '正常', amount: parseFloat(item.amount) || 0 }))
+                .filter(item => item.amount > 0);
+            if (items.length) {
+                const label = items.map(item => `${item.type}${item.amount.toFixed(0)}`).join('+');
+                return `${label} = ${totalAmount(record).toFixed(0)}`;
+            }
+        }
         const labels = [];
         if (Number(record.depositAmount || 0) > 0) labels.push('定金');
         if (Number(record.balanceAmount || 0) > 0) labels.push('尾款');
@@ -1181,6 +1223,7 @@
         document.getElementById('formDepositAmount').value = '';
         document.getElementById('formBalanceAmount').value = '';
         document.getElementById('formShippingAmount').value = '';
+        document.getElementById('formPaymentItems').value = '';
         refreshPaymentSummary();
         document.getElementById('formQuantity').value = '1';
         document.querySelector('input[name="formStatus"][value="待付款"]').checked = true;
@@ -1202,6 +1245,7 @@
         document.getElementById('formDepositAmount').value = Number(r.depositAmount || 0) || '';
         document.getElementById('formBalanceAmount').value = Number(r.balanceAmount || 0) || '';
         document.getElementById('formShippingAmount').value = Number(r.shippingAmount || 0) || '';
+        document.getElementById('formPaymentItems').value = JSON.stringify(normalizePaymentItems(r));
         refreshPaymentSummary();
         document.getElementById('formQuantity').value = r.quantity;
         const statusInput = document.querySelector(`input[name="formStatus"][value="${r.status}"]`);
@@ -1234,6 +1278,19 @@
     }
 
     function paymentInputsToItems() {
+        const detailInput = document.getElementById('formPaymentItems');
+        if (detailInput && detailInput.value) {
+            try {
+                const savedItems = JSON.parse(detailInput.value);
+                if (Array.isArray(savedItems)) {
+                    return savedItems
+                        .map(item => ({ type: item.type || '正常', amount: parseFloat(item.amount) || 0 }))
+                        .filter(item => item.amount > 0);
+                }
+            } catch (error) {
+                console.warn('付款明细解析失败，改用汇总字段。', error);
+            }
+        }
         const items = [];
         const deposit = parseFloat(document.getElementById('formDepositAmount').value) || 0;
         const balance = parseFloat(document.getElementById('formBalanceAmount').value) || 0;
@@ -1243,6 +1300,24 @@
         if (balance > 0) items.push({ type: '尾款', amount: balance });
         if (shipping > 0) items.push({ type: '运费', amount: shipping });
         if (items.length === 0 && fallback > 0) items.push({ type: '正常', amount: fallback });
+        return items;
+    }
+
+    function normalizePaymentItems(record) {
+        if (record && Array.isArray(record.paymentItems) && record.paymentItems.length) {
+            return record.paymentItems
+                .map(item => ({ type: item.type || '正常', amount: parseFloat(item.amount) || 0 }))
+                .filter(item => item.amount > 0);
+        }
+        const items = [];
+        const deposit = parseFloat(record?.depositAmount) || 0;
+        const balance = parseFloat(record?.balanceAmount) || 0;
+        const shipping = parseFloat(record?.shippingAmount) || 0;
+        const fallback = parseFloat(record?.price || record?.totalAmount) || 0;
+        if (deposit > 0) items.push({ type: '定金', amount: deposit });
+        if (balance > 0) items.push({ type: '尾款', amount: balance });
+        if (shipping > 0) items.push({ type: '运费', amount: shipping });
+        if (items.length === 0 && fallback > 0) items.push({ type: record?.paymentType || '正常', amount: fallback });
         return items;
     }
 
@@ -1263,6 +1338,7 @@
         document.getElementById('formBalanceAmount').value = balance || '';
         document.getElementById('formShippingAmount').value = shipping || '';
         document.getElementById('formPrice').value = (deposit + balance + shipping + normal) || '';
+        document.getElementById('formPaymentItems').value = JSON.stringify(items);
         refreshPaymentSummary();
     }
 
@@ -1300,6 +1376,7 @@
         list.innerHTML = (items.length ? items : [{ type: '定金', amount: '' }])
             .map(item => paymentRowTemplate(item))
             .join('');
+        refreshPaymentEditorTotal();
         document.getElementById('paymentModal').classList.add('active');
     }
 
@@ -1309,21 +1386,36 @@
 
     function addPaymentRow() {
         document.getElementById('paymentEditorList').insertAdjacentHTML('beforeend', paymentRowTemplate());
+        refreshPaymentEditorTotal();
     }
 
     function removePaymentRow(button) {
         button.closest('.payment-editor-row').remove();
+        refreshPaymentEditorTotal();
     }
 
-    function savePaymentModal() {
+    function readPaymentEditorItems() {
         const rows = Array.from(document.querySelectorAll('#paymentEditorList .payment-editor-row'));
-        const items = rows.map(row => ({
+        return rows.map(row => ({
             type: row.querySelector('.payment-kind').value,
             amount: parseFloat(row.querySelector('.payment-amount').value) || 0,
         })).filter(item => item.amount > 0);
-        applyPaymentItems(items);
+    }
+
+    function refreshPaymentEditorTotal() {
+        const totalEl = document.getElementById('paymentEditorTotal');
+        if (!totalEl) return;
+        const total = readPaymentEditorItems().reduce((sum, item) => sum + item.amount, 0);
+        totalEl.textContent = `¥${total.toFixed(2)}`;
+    }
+
+    function savePaymentModal() {
+        applyPaymentItems(readPaymentEditorItems());
         closePaymentModal();
     }
+
+    document.getElementById('paymentEditorList').addEventListener('input', refreshPaymentEditorTotal);
+    document.getElementById('paymentEditorList').addEventListener('change', refreshPaymentEditorTotal);
 
     function readFileAsDataURL(file) {
         return new Promise((resolve, reject) => {
@@ -1384,6 +1476,7 @@
             depositAmount: parseFloat(document.getElementById('formDepositAmount').value) || 0,
             balanceAmount: parseFloat(document.getElementById('formBalanceAmount').value) || 0,
             shippingAmount: parseFloat(document.getElementById('formShippingAmount').value) || 0,
+            paymentItems: paymentInputsToItems(),
             quantity: parseInt(document.getElementById('formQuantity').value) || 1,
             status: document.querySelector('input[name="formStatus"]:checked').value,
             date: document.getElementById('formDate').value,
@@ -1412,6 +1505,8 @@
     }
 
     function totalFromForm() {
+        const itemTotal = paymentInputsToItems().reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        if (itemTotal > 0) return itemTotal;
         const partsTotal =
             (parseFloat(document.getElementById('formDepositAmount').value) || 0) +
             (parseFloat(document.getElementById('formBalanceAmount').value) || 0) +
@@ -1420,11 +1515,16 @@
     }
 
     function inferPaymentType() {
-        const deposit = parseFloat(document.getElementById('formDepositAmount').value) || 0;
-        const balance = parseFloat(document.getElementById('formBalanceAmount').value) || 0;
+        const items = paymentInputsToItems();
+        const deposit = items.some(item => item.type === '定金');
+        const balance = items.some(item => item.type === '尾款');
+        const shipping = items.some(item => item.type === '运费');
+        const normal = items.some(item => item.type === '正常');
         if (deposit > 0 && balance > 0) return '定金+尾款';
-        if (deposit > 0) return '定金';
-        if (balance > 0) return '尾款';
+        if (deposit) return '定金';
+        if (balance) return '尾款';
+        if (shipping) return '运费';
+        if (normal) return '正常';
         return '正常';
     }
 
