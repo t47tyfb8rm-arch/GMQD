@@ -1473,7 +1473,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-status-defaults';
+    const APP_VERSION = '20260725-delete-refresh-stats';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1543,6 +1543,7 @@
     function renderGrid() {
         const grid = document.getElementById('productGrid');
         const filtered = getFilteredRecords();
+        updateStats();
 
         if (filtered.length === 0) {
             grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">还没有记录，点击 + 添加</div></div>`;
@@ -1563,7 +1564,6 @@
                 </div>
             `).join('');
 
-        updateStats();
     }
 
     function escapeHtml(text) {
@@ -2089,8 +2089,8 @@
         if (currentDetailId && confirm('确定要删除这条记录吗？')) {
             try {
                 await apiRequest(`/api/records/${currentDetailId}`, { method: 'DELETE' });
-                await loadRecordsFromApi();
                 closeDetailModal();
+                await loadRecordsFromApi();
             } catch (error) {
                 alert('从数据库删除失败，请检查后端服务。');
                 console.error(error);
