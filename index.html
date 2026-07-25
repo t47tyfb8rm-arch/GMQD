@@ -143,9 +143,10 @@
             color: #fff;
         }
         .header-info .subtitle {
-            font-size: 13px;
-            color: #8f858b;
+            font-size: 14.5px;
+            color: #7f747b;
             line-height: 1.4;
+            font-weight: 500;
         }
         .header-info .subtitle span {
             margin-right: 14px;
@@ -1107,15 +1108,55 @@
         /* ===== 空状态 ===== */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #ccc;
+            grid-column: 1 / -1;
+            padding: 58px 20px;
+            color: #b89aa8;
         }
         .empty-state .empty-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            position: relative;
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 14px;
+            border-radius: 28px;
+            background: linear-gradient(145deg, #ffe7f1, #fff8fb);
+            box-shadow: 0 10px 26px rgba(255, 105, 180, 0.14);
+        }
+        .empty-state .empty-icon::before {
+            content: "";
+            position: absolute;
+            left: 20px;
+            top: 18px;
+            width: 36px;
+            height: 30px;
+            border-radius: 18px 18px 10px 10px;
+            border: 3px solid #ff8fc2;
+            border-bottom-width: 5px;
+        }
+        .empty-state .empty-icon::after {
+            content: "♡";
+            position: absolute;
+            right: 13px;
+            bottom: 10px;
+            color: #ff69b4;
+            font-size: 24px;
+            line-height: 1;
         }
         .empty-state .empty-text {
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #9b7d8a;
+        }
+        .empty-state .empty-subtext {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #bfa8b2;
+        }
+        body.dark .empty-state .empty-icon {
+            background: linear-gradient(145deg, #382332, #211b20);
+            box-shadow: none;
+        }
+        body.dark .empty-state .empty-text {
+            color: #e8c9d8;
         }
 
         /* ===== 响应式 ===== */
@@ -1144,7 +1185,7 @@
                 padding: 16px 20px 9px;
             }
             .header-info .subtitle {
-                font-size: 12px;
+                font-size: 13.5px;
             }
             .tab-bar {
                 gap: 7px;
@@ -1496,7 +1537,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-header-tabs-comfort';
+    const APP_VERSION = '20260725-cute-empty-stats';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1569,7 +1610,7 @@
         updateStats();
 
         if (filtered.length === 0) {
-            grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">还没有记录，点击 + 添加</div></div>`;
+            grid.innerHTML = `<div class="empty-state"><div class="empty-icon"></div><div class="empty-text">衣柜还是空空的</div><div class="empty-subtext">点右下角 + 收进第一件小衣服</div></div>`;
             return;
         }
 
