@@ -1293,11 +1293,9 @@
 
 <!-- ===== 标签切换 ===== -->
 <div class="tab-bar" id="tabBar">
-    <div class="tab-item active" data-status="">全部状态</div>
-    <div class="tab-item" data-status="待付款">待付款</div>
+    <div class="tab-item active" data-status="">全部</div>
     <div class="tab-item" data-status="已购买">已购买</div>
     <div class="tab-item" data-status="待发货">待发货</div>
-    <div class="tab-item" data-status="已发货">已发货</div>
     <div class="tab-item" data-status="已收货">已收货</div>
 </div>
 
@@ -1411,10 +1409,8 @@
             <div class="form-group">
                 <label>状态</label>
                 <div class="radio-group" id="formStatusGroup">
-                    <label><input type="radio" name="formStatus" value="待付款" checked><span>待付款</span></label>
-                    <label><input type="radio" name="formStatus" value="已购买"><span>已购买</span></label>
+                    <label><input type="radio" name="formStatus" value="已购买" checked><span>已购买</span></label>
                     <label><input type="radio" name="formStatus" value="待发货"><span>待发货</span></label>
-                    <label><input type="radio" name="formStatus" value="已发货"><span>已发货</span></label>
                     <label><input type="radio" name="formStatus" value="已收货"><span>已收货</span></label>
                 </div>
             </div>
@@ -1477,7 +1473,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-platform-quantity-select';
+    const APP_VERSION = '20260725-status-defaults';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1652,8 +1648,8 @@
         document.getElementById('formPaymentItems').value = '';
         refreshPaymentSummary();
         document.getElementById('formQuantity').value = '1';
-        document.querySelector('input[name="formStatus"][value="待付款"]').checked = true;
-        document.getElementById('formDate').value = new Date().toISOString().slice(0, 10);
+        document.querySelector('input[name="formStatus"][value="已购买"]').checked = true;
+        document.getElementById('formDate').value = '';
         document.getElementById('formNote').value = '';
         document.getElementById('formModal').classList.add('active');
         resetFormModalScroll();
@@ -1676,7 +1672,7 @@
         refreshPaymentSummary();
         document.getElementById('formQuantity').value = r.quantity;
         const statusInput = document.querySelector(`input[name="formStatus"][value="${r.status}"]`);
-        if (statusInput) statusInput.checked = true;
+        (statusInput || document.querySelector('input[name="formStatus"][value="已购买"]')).checked = true;
         document.getElementById('formImageData').value = r.imageData || '';
         document.getElementById('formImage').value = '';
         updateImagePreview(r.imageData || '');
@@ -1860,7 +1856,7 @@
         summary.textContent = `${label} = ¥${total.toFixed(2)}`;
     }
 
-    function paymentRowTemplate(item = { type: '定金', amount: '' }) {
+    function paymentRowTemplate(item = { type: '正常', amount: '' }) {
         return `
             <div class="payment-editor-row">
                 <select class="payment-kind">
@@ -1878,7 +1874,7 @@
     function openPaymentModal() {
         const list = document.getElementById('paymentEditorList');
         const items = paymentInputsToItems();
-        list.innerHTML = (items.length ? items : [{ type: '定金', amount: '' }])
+        list.innerHTML = (items.length ? items : [{ type: '正常', amount: '' }])
             .map(item => paymentRowTemplate(item))
             .join('');
         refreshPaymentEditorTotal();
