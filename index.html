@@ -826,8 +826,14 @@
             margin-left: 6px;
             min-width: 0;
         }
-        .brand-custom-input.active {
+        .brand-custom-input.active,
+        .platform-custom-input.active {
             display: block;
+        }
+        .platform-custom-input {
+            display: none;
+            margin-left: 6px;
+            min-width: 0;
         }
         .form-modal-content .payment-summary-box {
             min-height: 40px;
@@ -1354,7 +1360,15 @@
             <div class="form-row two-col">
                 <div class="form-group">
                     <label>购买平台</label>
-                    <input type="text" id="formPlatform" placeholder="淘宝、京东">
+                    <input type="hidden" id="formPlatform" value="">
+                    <select id="formPlatformSelect" onchange="handlePlatformSelectChange()">
+                        <option value="">选择</option>
+                        <option value="淘宝">淘宝</option>
+                        <option value="京东">京东</option>
+                        <option value="微信群">微信群</option>
+                        <option value="__custom__">自定义</option>
+                    </select>
+                    <input class="platform-custom-input" type="text" id="formPlatformCustom" placeholder="输入平台" oninput="syncPlatformValue()">
                 </div>
                 <div class="form-group">
                     <label>购买日期</label>
@@ -1374,7 +1388,13 @@
                 </div>
                 <div class="form-group">
                     <label>数量</label>
-                    <input type="number" id="formQuantity" min="1" value="1" required>
+                    <select id="formQuantity" required>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>合计金额 (¥)</label>
@@ -1457,8 +1477,9 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-brand-select-custom';
+    const APP_VERSION = '20260725-platform-quantity-select';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
+    const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -1622,7 +1643,7 @@
         updateImagePreview('');
         document.getElementById('formName').value = '';
         setBrandValue('');
-        document.getElementById('formPlatform').value = '';
+        setPlatformValue('');
         document.getElementById('formOrderNo').value = '';
         document.getElementById('formPrice').value = '';
         document.getElementById('formDepositAmount').value = '';
@@ -1645,7 +1666,7 @@
         document.getElementById('editId').value = r.id;
         document.getElementById('formName').value = r.name;
         setBrandValue(r.brand || '');
-        document.getElementById('formPlatform').value = r.platform || '';
+        setPlatformValue(r.platform || '');
         document.getElementById('formOrderNo').value = r.orderNo || '';
         document.getElementById('formPrice').value = Number(r.price || r.totalAmount || 0) || '';
         document.getElementById('formDepositAmount').value = Number(r.depositAmount || 0) || '';
@@ -1710,6 +1731,44 @@
         const selected = document.getElementById('formBrandSelect').value;
         const custom = document.getElementById('formBrandCustom').value.trim();
         document.getElementById('formBrand').value = selected === '__custom__' ? custom : selected;
+    }
+
+    function setPlatformValue(value) {
+        const platform = (value || '').trim();
+        const select = document.getElementById('formPlatformSelect');
+        const custom = document.getElementById('formPlatformCustom');
+        if (!platform) {
+            select.value = '';
+            custom.value = '';
+            custom.classList.remove('active');
+        } else if (PLATFORM_OPTIONS.includes(platform)) {
+            select.value = platform;
+            custom.value = '';
+            custom.classList.remove('active');
+        } else {
+            select.value = '__custom__';
+            custom.value = platform;
+            custom.classList.add('active');
+        }
+        syncPlatformValue();
+    }
+
+    function handlePlatformSelectChange() {
+        const custom = document.getElementById('formPlatformCustom');
+        custom.classList.toggle('active', document.getElementById('formPlatformSelect').value === '__custom__');
+        if (!custom.classList.contains('active')) custom.value = '';
+        syncPlatformValue();
+    }
+
+    function syncPlatformValue() {
+        const selected = document.getElementById('formPlatformSelect').value;
+        const custom = document.getElementById('formPlatformCustom').value.trim();
+        document.getElementById('formPlatform').value = selected === '__custom__' ? custom : selected;
+    }
+
+    function getPlatformValue() {
+        syncPlatformValue();
+        return document.getElementById('formPlatform').value.trim();
     }
 
     function updateImagePreview(src) {
@@ -1914,7 +1973,7 @@
         const data = {
             name: document.getElementById('formName').value.trim(),
             brand: getBrandValue(),
-            platform: document.getElementById('formPlatform').value.trim(),
+            platform: getPlatformValue(),
             orderNo: document.getElementById('formOrderNo').value.trim(),
             paymentType: inferPaymentType(),
             hasShipping: Number(document.getElementById('formShippingAmount').value || 0) > 0,
