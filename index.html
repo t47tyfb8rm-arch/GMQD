@@ -981,23 +981,12 @@
             color: #2f2a2e;
             font-weight: 700;
         }
-        .detail-modal .payment-total-chip {
-            background: #ff69b4;
-            color: #fff;
-        }
-        .detail-modal .payment-total-chip .amount {
-            color: #fff;
-        }
         body.dark .detail-modal .payment-chip {
             background: #382332;
             color: #ff8bc8;
         }
         body.dark .detail-modal .payment-chip .amount {
             color: #f3edf2;
-        }
-        body.dark .detail-modal .payment-total-chip,
-        body.dark .detail-modal .payment-total-chip .amount {
-            color: #fff;
         }
         .detail-modal .detail-list li .value .sub {
             display: block;
@@ -1391,7 +1380,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-payment-detail-chips';
+    const APP_VERSION = '20260725-payment-items-only';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -1523,10 +1512,6 @@
         return `
             <span class="payment-breakdown">
                 ${chips}
-                <span class="payment-chip payment-total-chip">
-                    <span>合计</span>
-                    <span class="amount">¥${totalAmount(record).toFixed(2)}</span>
-                </span>
             </span>
         `;
     }
