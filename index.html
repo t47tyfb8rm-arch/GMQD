@@ -956,6 +956,49 @@
             color: #ff69b4;
             font-weight: 700;
         }
+        .detail-modal .detail-list li.payment-detail-row {
+            min-height: 42px;
+        }
+        .detail-modal .payment-breakdown {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 5px;
+            line-height: 1.2;
+        }
+        .detail-modal .payment-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #fff0f6;
+            color: #ff4fa8;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .detail-modal .payment-chip .amount {
+            color: #2f2a2e;
+            font-weight: 700;
+        }
+        .detail-modal .payment-total-chip {
+            background: #ff69b4;
+            color: #fff;
+        }
+        .detail-modal .payment-total-chip .amount {
+            color: #fff;
+        }
+        body.dark .detail-modal .payment-chip {
+            background: #382332;
+            color: #ff8bc8;
+        }
+        body.dark .detail-modal .payment-chip .amount {
+            color: #f3edf2;
+        }
+        body.dark .detail-modal .payment-total-chip,
+        body.dark .detail-modal .payment-total-chip .amount {
+            color: #fff;
+        }
         .detail-modal .detail-list li .value .sub {
             display: block;
             font-size: 12px;
@@ -1348,7 +1391,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-inline-field-cards';
+    const APP_VERSION = '20260725-payment-detail-chips';
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -1466,6 +1509,26 @@
         if (Number(record.shippingAmount || 0) > 0) labels.push('运费');
         if (labels.length) return `${labels.join('+')} ${totalAmount(record).toFixed(0)}`;
         return record.paymentType || '正常';
+    }
+
+    function paymentDetailHtml(record) {
+        const items = normalizePaymentItems(record);
+        if (!items.length) return escapeHtml(record.paymentType || '正常');
+        const chips = items.map(item => `
+            <span class="payment-chip">
+                <span>${escapeHtml(item.type)}</span>
+                <span class="amount">¥${Number(item.amount || 0).toFixed(2)}</span>
+            </span>
+        `).join('');
+        return `
+            <span class="payment-breakdown">
+                ${chips}
+                <span class="payment-chip payment-total-chip">
+                    <span>合计</span>
+                    <span class="amount">¥${totalAmount(record).toFixed(2)}</span>
+                </span>
+            </span>
+        `;
     }
 
     function paymentTypeClass(record) {
@@ -1835,7 +1898,7 @@
             <li><span class="icon">📏</span><span class="label">尺码</span><span class="value">${escapeHtml(r.orderNo || '—')}</span></li>
             <li><span class="icon">N</span><span class="label">数量</span><span class="value">${r.quantity}</span></li>
             <li><span class="icon">♥</span><span class="label">状态</span><span class="value">${r.status}</span></li>
-            <li class="wide"><span class="icon">票</span><span class="label">付款</span><span class="value">${escapeHtml(paymentLabel(r))}</span></li>
+            <li class="wide payment-detail-row"><span class="icon">票</span><span class="label">付款</span><span class="value">${paymentDetailHtml(r)}</span></li>
             <li><span class="icon">¥</span><span class="label">合计</span><span class="value price">¥${totalAmount(r).toFixed(2)}</span></li>
             <li><span class="icon">日</span><span class="label">日期</span><span class="value">${escapeHtml(r.date || '—')}</span></li>
             <li><span class="icon">渠</span><span class="label">渠道</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
