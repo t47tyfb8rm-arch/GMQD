@@ -821,6 +821,14 @@
         .form-modal-content .item-row .form-group input {
             height: 24px;
         }
+        .brand-custom-input {
+            display: none;
+            margin-left: 6px;
+            min-width: 0;
+        }
+        .brand-custom-input.active {
+            display: block;
+        }
         .form-modal-content .payment-summary-box {
             min-height: 40px;
             padding: 6px 9px;
@@ -1329,15 +1337,18 @@
                 </div>
                 <div class="form-group">
                     <label>品牌</label>
-                    <input type="text" id="formBrand" list="brandOptions" placeholder="品牌">
-                    <datalist id="brandOptions">
-                        <option value="梨涡"></option>
-                        <option value="小满"></option>
-                        <option value="圆点"></option>
-                        <option value="娃丽比"></option>
-                        <option value="澳泷哩"></option>
-                        <option value="balabala"></option>
-                    </datalist>
+                    <input type="hidden" id="formBrand" value="">
+                    <select id="formBrandSelect" onchange="handleBrandSelectChange()">
+                        <option value="">选择</option>
+                        <option value="梨涡">梨涡</option>
+                        <option value="小满">小满</option>
+                        <option value="圆点">圆点</option>
+                        <option value="娃丽比">娃丽比</option>
+                        <option value="澳泷哩">澳泷哩</option>
+                        <option value="balabala">balabala</option>
+                        <option value="__custom__">自定义</option>
+                    </select>
+                    <input class="brand-custom-input" type="text" id="formBrandCustom" placeholder="输入品牌" oninput="syncBrandValue()">
                 </div>
             </div>
             <div class="form-row two-col">
@@ -1446,7 +1457,8 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-brand-options';
+    const APP_VERSION = '20260725-brand-select-custom';
+    const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const API_BASE = '';
     let records = [];
     let currentFilter = '';
@@ -1609,7 +1621,7 @@
         document.getElementById('formImage').value = '';
         updateImagePreview('');
         document.getElementById('formName').value = '';
-        document.getElementById('formBrand').value = '';
+        setBrandValue('');
         document.getElementById('formPlatform').value = '';
         document.getElementById('formOrderNo').value = '';
         document.getElementById('formPrice').value = '';
@@ -1632,7 +1644,7 @@
         document.getElementById('formModalTitle').textContent = '编辑记录';
         document.getElementById('editId').value = r.id;
         document.getElementById('formName').value = r.name;
-        document.getElementById('formBrand').value = r.brand || '';
+        setBrandValue(r.brand || '');
         document.getElementById('formPlatform').value = r.platform || '';
         document.getElementById('formOrderNo').value = r.orderNo || '';
         document.getElementById('formPrice').value = Number(r.price || r.totalAmount || 0) || '';
@@ -1663,7 +1675,41 @@
     }
 
     function getBrandValue() {
+        syncBrandValue();
         return document.getElementById('formBrand').value.trim();
+    }
+
+    function setBrandValue(value) {
+        const brand = (value || '').trim();
+        const select = document.getElementById('formBrandSelect');
+        const custom = document.getElementById('formBrandCustom');
+        if (!brand) {
+            select.value = '';
+            custom.value = '';
+            custom.classList.remove('active');
+        } else if (BRAND_OPTIONS.includes(brand)) {
+            select.value = brand;
+            custom.value = '';
+            custom.classList.remove('active');
+        } else {
+            select.value = '__custom__';
+            custom.value = brand;
+            custom.classList.add('active');
+        }
+        syncBrandValue();
+    }
+
+    function handleBrandSelectChange() {
+        const custom = document.getElementById('formBrandCustom');
+        custom.classList.toggle('active', document.getElementById('formBrandSelect').value === '__custom__');
+        if (!custom.classList.contains('active')) custom.value = '';
+        syncBrandValue();
+    }
+
+    function syncBrandValue() {
+        const selected = document.getElementById('formBrandSelect').value;
+        const custom = document.getElementById('formBrandCustom').value.trim();
+        document.getElementById('formBrand').value = selected === '__custom__' ? custom : selected;
     }
 
     function updateImagePreview(src) {
