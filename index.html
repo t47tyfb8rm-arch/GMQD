@@ -126,33 +126,35 @@
 
         /* ===== 头部信息 ===== */
         .header-info {
-            padding: 16px 20px 12px;
+            padding: 18px 20px 10px;
             background: #fff7fa;
         }
         body.dark .header-info {
             background: #161316;
         }
         .header-info .title {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 26px;
+            font-weight: 800;
             color: #000;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            line-height: 1.15;
         }
         body.dark .header-info .title {
             color: #fff;
         }
         .header-info .subtitle {
-            font-size: 14px;
-            color: #999;
+            font-size: 13px;
+            color: #8f858b;
+            line-height: 1.4;
         }
         .header-info .subtitle span {
-            margin-right: 12px;
+            margin-right: 14px;
         }
         /* ===== 标签切换 ===== */
         .tab-bar {
             display: flex;
-            gap: 0;
-            padding: 0 20px 12px;
+            gap: 8px;
+            padding: 4px 20px 14px;
             background: #fff7fa;
             border-bottom: 1px solid #f0e0e0;
             overflow-x: auto;
@@ -166,15 +168,20 @@
             display: none;
         }
         .tab-bar .tab-item {
-            flex-shrink: 0;
-            padding: 6px 14px;
-            font-size: 13px;
-            color: #666;
+            flex: 1 0 0;
+            min-width: 0;
+            height: 38px;
+            padding: 0 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #5f555b;
             cursor: pointer;
-            border-radius: 16px;
+            border-radius: 999px;
             transition: all 0.2s;
             white-space: nowrap;
-            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         body.dark .tab-bar .tab-item {
             color: #cdbfc8;
@@ -182,6 +189,7 @@
         .tab-bar .tab-item.active {
             background: #ff69b4;
             color: #fff;
+            box-shadow: 0 6px 14px rgba(255, 105, 180, 0.22);
         }
         .tab-bar .tab-item:hover:not(.active) {
             background: #ffe0ec;
@@ -1130,7 +1138,22 @@
                 padding: 24px 28px 84px;
             }
             .header-info .title {
-                font-size: 20px;
+                font-size: 25px;
+            }
+            .header-info {
+                padding: 16px 20px 9px;
+            }
+            .header-info .subtitle {
+                font-size: 12px;
+            }
+            .tab-bar {
+                gap: 7px;
+                padding: 3px 20px 13px;
+            }
+            .tab-bar .tab-item {
+                height: 36px;
+                padding: 0 8px;
+                font-size: 13px;
             }
             .form-row {
                 grid-template-columns: 1fr;
@@ -1473,7 +1496,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260725-delete-refresh-stats';
+    const APP_VERSION = '20260725-header-tabs-comfort';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
