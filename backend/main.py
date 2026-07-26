@@ -36,6 +36,10 @@ class RecordIn(BaseModel):
     imageData: str = ""
 
 
+class SortIn(BaseModel):
+    ids: list[int]
+
+
 app = FastAPI(title="GMQD 购物清单")
 
 
@@ -75,6 +79,7 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
         "date": row["purchase_date"] or "",
         "note": row["note"] or "",
         "imageData": row["image_data"] or "",
+        "sortOrder": row["sort_order"] or 0,
         "createdAt": row["created_at"],
         "updatedAt": row["updated_at"],
     }
@@ -109,6 +114,7 @@ def init_db() -> None:
                 purchase_date TEXT DEFAULT '',
                 note TEXT DEFAULT '',
                 image_data TEXT DEFAULT '',
+                sort_order INTEGER DEFAULT 0,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
@@ -127,6 +133,11 @@ def init_db() -> None:
             conn.execute("ALTER TABLE records ADD COLUMN shipping_amount REAL DEFAULT 0")
         if "payment_details" not in columns:
             conn.execute("ALTER TABLE records ADD COLUMN payment_details TEXT DEFAULT '[]'")
+        if "sort_order" not in columns:
+            conn.execute("ALTER TABLE records ADD COLUMN sort_order INTEGER DEFAULT 0")
+            rows = conn.execute("SELECT id FROM records ORDER BY id DESC").fetchall()
+            for index, row in enumerate(rows):
+                conn.execute("UPDATE records SET sort_order = ? WHERE id = ?", (index + 1, row["id"]))
         count = conn.execute("SELECT COUNT(*) AS count FROM records").fetchone()["count"]
         if count == 0:
             defaults = [
@@ -143,8 +154,8 @@ def init_db() -> None:
             conn.executemany(
                 """
                 INSERT INTO records
-                    (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-                VALUES (?, ?, ?, ?, '正常', 0, ?, 0, 0, 0, '[]', ?, ?, ?, ?, '', ?, ?)
+                    (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, sort_order, created_at, updated_at)
+                VALUES (?, ?, ?, ?, '正常', 0, ?, 0, 0, 0, '[]', ?, ?, ?, ?, '', 0, ?, ?)
                 """,
                 [(*item, ts, ts) for item in defaults],
             )
@@ -169,7 +180,7 @@ def health() -> dict[str, Any]:
 @app.get("/api/records")
 def list_records() -> list[dict[str, Any]]:
     with connect() as conn:
-        rows = conn.execute("SELECT * FROM records ORDER BY id DESC").fetchall()
+        rows = conn.execute("SELECT * FROM records ORDER BY sort_order ASC, id DESC").fetchall()
     return [row_to_record(row) for row in rows]
 
 
@@ -177,33 +188,37 @@ def list_records() -> list[dict[str, Any]]:
 def create_record(record: RecordIn) -> dict[str, Any]:
     ts = now_text()
     total_amount = record.price or (record.depositAmount + record.balanceAmount + record.shippingAmount)
-    record_id = execute_write(
-        """
-        INSERT INTO records
-            (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            record.name.strip(),
-            record.brand.strip(),
-            record.platform.strip(),
-            record.orderNo.strip(),
-            record.paymentType.strip() or "正常",
-            1 if (record.hasShipping or record.shippingAmount > 0) else 0,
-            total_amount,
-            record.depositAmount,
-            record.balanceAmount,
-            record.shippingAmount,
-            json.dumps(record.paymentItems, ensure_ascii=False),
-            record.quantity,
-            record.status,
-            record.date,
-            record.note.strip(),
-            record.imageData,
-            ts,
-            ts,
-        ),
-    )
+    with connect() as conn:
+        conn.execute("UPDATE records SET sort_order = sort_order + 1")
+        cur = conn.execute(
+            """
+            INSERT INTO records
+                (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, sort_order, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+            """,
+            (
+                record.name.strip(),
+                record.brand.strip(),
+                record.platform.strip(),
+                record.orderNo.strip(),
+                record.paymentType.strip() or "正常",
+                1 if (record.hasShipping or record.shippingAmount > 0) else 0,
+                total_amount,
+                record.depositAmount,
+                record.balanceAmount,
+                record.shippingAmount,
+                json.dumps(record.paymentItems, ensure_ascii=False),
+                record.quantity,
+                record.status,
+                record.date,
+                record.note.strip(),
+                record.imageData,
+                ts,
+                ts,
+            ),
+        )
+        conn.commit()
+        record_id = int(cur.lastrowid)
     return get_record(record_id)
 
 
@@ -266,6 +281,29 @@ def delete_record(record_id: int) -> dict[str, Any]:
     return {"ok": True}
 
 
+@app.put("/api/records/sort")
+def sort_records(sort: SortIn) -> dict[str, Any]:
+    if not sort.ids:
+        return {"ok": True}
+    ts = now_text()
+    with connect() as conn:
+        existing = {
+            row["id"]
+            for row in conn.execute(
+                f"SELECT id FROM records WHERE id IN ({','.join('?' for _ in sort.ids)})",
+                tuple(sort.ids),
+            ).fetchall()
+        }
+        for index, record_id in enumerate(sort.ids):
+            if record_id in existing:
+                conn.execute(
+                    "UPDATE records SET sort_order = ?, updated_at = ? WHERE id = ?",
+                    (index + 1, ts, record_id),
+                )
+        conn.commit()
+    return {"ok": True}
+
+
 @app.post("/api/import")
 def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
     if not records_to_import:
@@ -275,8 +313,8 @@ def import_records(records_to_import: list[RecordIn]) -> dict[str, Any]:
         conn.executemany(
             """
             INSERT INTO records
-                (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (name, brand, platform, order_no, payment_type, has_shipping, price, deposit_amount, balance_amount, shipping_amount, payment_details, quantity, status, purchase_date, note, image_data, sort_order, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
             """,
             [
                 (
