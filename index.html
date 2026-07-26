@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -132,6 +132,15 @@
         body.dark .header-info {
             background: #161316;
         }
+        .header-topline {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+        .header-title-group {
+            min-width: 0;
+        }
         .header-info .title {
             font-size: 26px;
             font-weight: 800;
@@ -150,6 +159,25 @@
         }
         .header-info .subtitle span {
             margin-right: 14px;
+        }
+        .header-sort-btn {
+            flex: 0 0 auto;
+            margin-top: 2px;
+            min-width: 58px;
+            height: 34px;
+            border: none;
+            border-radius: 999px;
+            background: #fff;
+            color: #ff4fa8;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(255, 105, 180, 0.16);
+        }
+        body.dark .header-sort-btn {
+            background: #2a2028;
+            color: #ff8bc8;
+            box-shadow: none;
         }
         /* ===== 标签切换 ===== */
         .tab-bar {
@@ -280,35 +308,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.12);
         }
         body.dark .product-card .quick-edit {
-            background: rgba(33, 27, 32, 0.92);
-            color: #ff8bc8;
-        }
-        .sort-controls {
-            position: absolute;
-            right: 5px;
-            top: 5px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            z-index: 2;
-        }
-        .sort-btn {
-            width: 24px;
-            height: 24px;
-            border: none;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.92);
-            color: #ff4fa8;
-            cursor: pointer;
-            font-size: 13px;
-            line-height: 1;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-        }
-        .sort-btn:disabled {
-            opacity: 0.36;
-            cursor: default;
-        }
-        body.dark .sort-btn {
             background: rgba(33, 27, 32, 0.92);
             color: #ff8bc8;
         }
@@ -492,6 +491,94 @@
         }
         body.dark .modal-content .modal-header h3 {
             color: #f3edf2;
+        }
+        .sort-modal-content {
+            max-width: 520px;
+            max-height: 82vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .sort-list {
+            display: grid;
+            gap: 8px;
+            overflow-y: auto;
+            padding: 2px 2px 8px;
+            max-height: 58vh;
+        }
+        .sort-row {
+            display: grid;
+            grid-template-columns: 46px minmax(0, 1fr) 76px;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #f4e6ee;
+            border-radius: 14px;
+            background: #fffafb;
+        }
+        body.dark .sort-row {
+            border-color: #3b3038;
+            background: #181316;
+        }
+        .sort-thumb {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #f4f1f3;
+        }
+        .sort-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 20px;
+        }
+        .sort-name {
+            color: #242024;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        body.dark .sort-name {
+            color: #f3edf2;
+        }
+        .sort-meta {
+            margin-top: 4px;
+            color: #9b9097;
+            font-size: 12px;
+        }
+        .sort-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+        .sort-actions button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: #fff0f6;
+            color: #ff4fa8;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sort-actions button:disabled {
+            opacity: 0.32;
+            cursor: default;
+        }
+        body.dark .sort-actions button {
+            background: #342431;
+            color: #ff8bc8;
+        }
+        .sort-empty {
+            padding: 26px 10px;
+            text-align: center;
+            color: #9b9097;
+            font-size: 14px;
         }
         .form-group {
             margin-bottom: 7px;
@@ -1213,6 +1300,11 @@
             .header-info {
                 padding: 16px 20px 9px;
             }
+            .header-sort-btn {
+                min-width: 52px;
+                height: 32px;
+                font-size: 12px;
+            }
             .header-info .subtitle {
                 font-size: 13.5px;
             }
@@ -1345,6 +1437,26 @@
                 max-height: 86vh;
                 padding: 16px;
             }
+            .sort-modal-content {
+                max-height: calc(100dvh - 28px);
+            }
+            .sort-list {
+                max-height: 58vh;
+            }
+            .sort-row {
+                grid-template-columns: 42px minmax(0, 1fr) 70px;
+                gap: 8px;
+                padding: 7px;
+            }
+            .sort-thumb {
+                width: 42px;
+                height: 42px;
+                border-radius: 10px;
+            }
+            .sort-actions button {
+                width: 30px;
+                height: 30px;
+            }
             .detail-modal .detail-img-area {
                 width: min(56%, 190px);
                 height: 190px;
@@ -1377,10 +1489,15 @@
 
 <!-- ===== 头部信息 ===== -->
 <div class="header-info">
-    <div class="title">柚子的衣柜</div>
-    <div class="subtitle">
-        <span id="totalCount">已收录 0</span>
-        <span id="totalPrice">总价 ¥0.00</span>
+    <div class="header-topline">
+        <div class="header-title-group">
+            <div class="title">柚子的衣柜</div>
+            <div class="subtitle">
+                <span id="totalCount">已收录 0</span>
+                <span id="totalPrice">总价 ¥0.00</span>
+            </div>
+        </div>
+        <button class="header-sort-btn" type="button" onclick="openSortModal()">排序</button>
     </div>
 </div>
 
@@ -1556,6 +1673,21 @@
     </div>
 </div>
 
+<!-- ===== 排序弹窗 ===== -->
+<div class="modal-overlay" id="sortModal">
+    <div class="modal-content sort-modal-content">
+        <div class="modal-header">
+            <h3>调整顺序</h3>
+            <button class="close-btn" onclick="closeSortModal()">✕</button>
+        </div>
+        <div class="sort-list" id="sortList"></div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeSortModal()">取消</button>
+            <button type="button" class="btn-save" onclick="saveSortOrder()">保存</button>
+        </div>
+    </div>
+</div>
+
 <!-- ===== 图片预览弹窗 ===== -->
 <div class="modal-overlay image-viewer-overlay" id="imageViewerModal">
     <div class="image-viewer">
@@ -1566,11 +1698,12 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-custom-card-sort';
+    const APP_VERSION = '20260726-sort-modal';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
     let records = [];
+    let sortDraftRecords = [];
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
@@ -1643,12 +1776,11 @@
             return;
         }
 
-        grid.innerHTML = filtered.map((r, index) => `
+        grid.innerHTML = filtered.map((r) => `
             <div class="product-card" onclick="openDetail('${r.id}')">
                     <div class="img-wrap">
                         ${r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '<div class="placeholder-icon">🛍</div>'}
                         ${r.status ? `<div class="tag">${escapeHtml(r.status)}</div>` : ''}
-                        ${sortControlsHtml(r.id, index, filtered.length)}
                         <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
                     </div>
                     <div class="card-body">
@@ -1666,40 +1798,67 @@
         return div.innerHTML;
     }
 
-    function sortControlsHtml(id, index, total) {
-        if (currentFilter || total <= 1) return '';
-        return `
-            <div class="sort-controls">
-                <button class="sort-btn" type="button" onclick="moveRecord(event, '${id}', -1)" ${index === 0 ? 'disabled' : ''} title="上移">↑</button>
-                <button class="sort-btn" type="button" onclick="moveRecord(event, '${id}', 1)" ${index === total - 1 ? 'disabled' : ''} title="下移">↓</button>
-            </div>
-        `;
+    function totalAmount(record) {
+        const partsTotal = Number(record.depositAmount || 0) + Number(record.balanceAmount || 0) + Number(record.shippingAmount || 0);
+        return partsTotal || Number(record.totalAmount || record.price || 0);
     }
 
-    async function moveRecord(event, id, direction) {
-        event.stopPropagation();
-        const index = records.findIndex(r => String(r.id) === String(id));
+    function openSortModal() {
+        sortDraftRecords = [...records];
+        renderSortList();
+        document.getElementById('sortModal').classList.add('active');
+    }
+
+    function closeSortModal() {
+        document.getElementById('sortModal').classList.remove('active');
+        sortDraftRecords = [];
+    }
+
+    function renderSortList() {
+        const list = document.getElementById('sortList');
+        if (!sortDraftRecords.length) {
+            list.innerHTML = '<div class="sort-empty">暂无订单可以排序</div>';
+            return;
+        }
+        list.innerHTML = sortDraftRecords.map((r, index) => `
+            <div class="sort-row">
+                ${r.imageData
+                    ? `<img class="sort-thumb" src="${r.imageData}" alt="${escapeHtml(r.name)}">`
+                    : '<div class="sort-thumb sort-placeholder">🛍</div>'}
+                <div class="sort-info">
+                    <div class="sort-name">${escapeHtml(r.name)}</div>
+                    <div class="sort-meta">¥${totalAmount(r).toFixed(2)} · ${escapeHtml(r.status || '未设置')}</div>
+                </div>
+                <div class="sort-actions">
+                    <button type="button" onclick="moveSortDraft(${index}, -1)" ${index === 0 ? 'disabled' : ''} title="上移">↑</button>
+                    <button type="button" onclick="moveSortDraft(${index}, 1)" ${index === sortDraftRecords.length - 1 ? 'disabled' : ''} title="下移">↓</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function moveSortDraft(index, direction) {
         const nextIndex = index + direction;
-        if (index < 0 || nextIndex < 0 || nextIndex >= records.length) return;
-        const nextRecords = [...records];
-        [nextRecords[index], nextRecords[nextIndex]] = [nextRecords[nextIndex], nextRecords[index]];
-        records = nextRecords;
+        if (nextIndex < 0 || nextIndex >= sortDraftRecords.length) return;
+        [sortDraftRecords[index], sortDraftRecords[nextIndex]] = [sortDraftRecords[nextIndex], sortDraftRecords[index]];
+        renderSortList();
+    }
+
+    async function saveSortOrder() {
+        records = [...sortDraftRecords];
         renderGrid();
         try {
             await apiRequest('/api/records/sort', {
                 method: 'PUT',
                 body: JSON.stringify({ ids: records.map(r => Number(r.id)) }),
             });
+            closeSortModal();
+            await loadRecordsFromApi();
         } catch (error) {
             alert('排序保存失败，请稍后再试。');
             await loadRecordsFromApi();
             console.error(error);
         }
-    }
-
-    function totalAmount(record) {
-        const partsTotal = Number(record.depositAmount || 0) + Number(record.balanceAmount || 0) + Number(record.shippingAmount || 0);
-        return partsTotal || Number(record.totalAmount || record.price || 0);
     }
 
     function paymentLabel(record) {
