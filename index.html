@@ -1698,7 +1698,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-sort-modal';
+    const APP_VERSION = '20260726-sort-modal-fix';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1848,7 +1848,7 @@
         records = [...sortDraftRecords];
         renderGrid();
         try {
-            await apiRequest('/api/records/sort', {
+            await apiRequest('/api/records/reorder', {
                 method: 'PUT',
                 body: JSON.stringify({ ids: records.map(r => Number(r.id)) }),
             });
