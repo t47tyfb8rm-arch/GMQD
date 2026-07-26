@@ -522,7 +522,7 @@
         }
         .sort-row {
             display: grid;
-            grid-template-columns: 34px 46px minmax(0, 1fr);
+            grid-template-columns: 32px 46px minmax(0, 1fr);
             align-items: center;
             gap: 10px;
             padding: 9px;
@@ -568,29 +568,20 @@
             opacity: 0.72;
         }
         .sort-handle {
-            width: 34px;
-            height: 48px;
+            width: 32px;
+            height: 32px;
             border-radius: 12px;
             background: #fff0f6;
             color: #ff4fa8;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 2px;
             pointer-events: none;
         }
         .sort-index {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
             line-height: 1;
-        }
-        .sort-grip {
-            color: currentColor;
-            font-size: 14px;
-            font-weight: 800;
-            line-height: 0.8;
-            text-align: center;
         }
         .sort-row.dragging .sort-handle {
             background: #ff69b4;
@@ -1535,16 +1526,16 @@
                 max-height: 58vh;
             }
             .sort-row {
-                grid-template-columns: 32px 42px minmax(0, 1fr);
+                grid-template-columns: 30px 42px minmax(0, 1fr);
                 gap: 8px;
                 padding: 7px;
             }
             .sort-handle {
-                width: 32px;
-                height: 44px;
+                width: 30px;
+                height: 30px;
             }
             .sort-drag-ghost {
-                grid-template-columns: 32px 42px minmax(0, 1fr);
+                grid-template-columns: 30px 42px minmax(0, 1fr);
                 gap: 8px;
                 padding: 7px;
             }
@@ -1795,7 +1786,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-stable-row-drag-sort';
+    const APP_VERSION = '20260726-sort-number-only';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1923,7 +1914,6 @@
             <div class="sort-row ${sortDragState && String(sortDragState.id) === String(r.id) ? 'dragging' : ''}" data-sort-id="${r.id}" onpointerdown="startSortLongPress(event, '${r.id}')">
                 <div class="sort-handle" aria-hidden="true">
                     <span class="sort-index">${index + 1}</span>
-                    <span class="sort-grip">⋮⋮</span>
                 </div>
                 ${r.imageData
                     ? `<img class="sort-thumb" src="${r.imageData}" alt="${escapeHtml(r.name)}">`
