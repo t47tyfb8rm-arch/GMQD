@@ -567,7 +567,7 @@
         body.sort-dragging .sort-row:not(.dragging) {
             opacity: 0.72;
         }
-        .sort-handle {
+        .sort-number-badge {
             width: 32px;
             height: 32px;
             border-radius: 12px;
@@ -578,12 +578,15 @@
             justify-content: center;
             pointer-events: none;
         }
+        .sort-grip {
+            display: none !important;
+        }
         .sort-index {
             font-size: 13px;
             font-weight: 700;
             line-height: 1;
         }
-        .sort-row.dragging .sort-handle {
+        .sort-row.dragging .sort-number-badge {
             background: #ff69b4;
             color: #fff;
         }
@@ -600,7 +603,7 @@
             background: #342431;
             color: #ff8bc8;
         }
-        body.dark .sort-handle {
+        body.dark .sort-number-badge {
             background: #342431;
             color: #ff8bc8;
         }
@@ -1530,7 +1533,7 @@
                 gap: 8px;
                 padding: 7px;
             }
-            .sort-handle {
+            .sort-number-badge {
                 width: 30px;
                 height: 30px;
             }
@@ -1764,7 +1767,7 @@
 <div class="modal-overlay" id="sortModal">
     <div class="modal-content sort-modal-content">
         <div class="modal-header">
-            <h3>调整顺序</h3>
+            <h3>长按调整顺序</h3>
             <button class="close-btn" onclick="closeSortModal()">✕</button>
         </div>
         <div class="sort-drag-hint">正在拖动，移动到想放的位置</div>
@@ -1786,7 +1789,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-sort-number-only';
+    const APP_VERSION = '20260726-long-press-title-number';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1912,7 +1915,7 @@
         }
         list.innerHTML = sortDraftRecords.map((r, index) => `
             <div class="sort-row ${sortDragState && String(sortDragState.id) === String(r.id) ? 'dragging' : ''}" data-sort-id="${r.id}" onpointerdown="startSortLongPress(event, '${r.id}')">
-                <div class="sort-handle" aria-hidden="true">
+                <div class="sort-number-badge" aria-hidden="true">
                     <span class="sort-index">${index + 1}</span>
                 </div>
                 ${r.imageData
