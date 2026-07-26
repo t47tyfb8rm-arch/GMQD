@@ -522,10 +522,10 @@
         }
         .sort-row {
             display: grid;
-            grid-template-columns: 22px 46px minmax(0, 1fr) 76px;
+            grid-template-columns: 34px 46px minmax(0, 1fr);
             align-items: center;
             gap: 10px;
-            padding: 8px;
+            padding: 9px;
             border: 1px solid #f4e6ee;
             border-radius: 14px;
             background: #fffafb;
@@ -534,31 +534,68 @@
             transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, border-color 0.16s ease, background 0.16s ease;
         }
         .sort-row.dragging {
-            opacity: 0.94;
-            transform: scale(1.035) translateY(-2px);
+            position: relative;
+            opacity: 1;
+            transform: none;
             border-color: #ff69b4;
-            background: #fff3f8;
-            box-shadow: 0 14px 30px rgba(255, 105, 180, 0.30);
+            border-style: dashed;
+            background: #fff0f6;
+            box-shadow: inset 0 0 0 1px rgba(255, 105, 180, 0.18);
             cursor: grabbing;
-            z-index: 2;
+        }
+        .sort-row.dragging > * {
+            opacity: 0.18;
+        }
+        .sort-row.dragging::after {
+            content: "放到这里";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #ff69b4;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
         }
         body.sort-dragging {
             overscroll-behavior: contain;
         }
         body.sort-dragging .sort-row:not(.dragging) {
-            opacity: 0.56;
+            opacity: 0.72;
         }
-        .sort-grip {
-            color: #d8a9c2;
-            font-size: 18px;
-            font-weight: 700;
-            line-height: 1;
-            text-align: center;
+        .sort-handle {
+            width: 34px;
+            height: 48px;
+            border: none;
+            border-radius: 12px;
+            background: #fff0f6;
+            color: #ff4fa8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            cursor: grab;
             touch-action: none;
         }
-        .sort-row.dragging .sort-grip {
-            color: #ff4fa8;
-            transform: scale(1.2);
+        .sort-index {
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .sort-grip {
+            color: currentColor;
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 0.8;
+            text-align: center;
+        }
+        .sort-row.dragging .sort-handle {
+            background: #ff69b4;
+            color: #fff;
         }
         body.dark .sort-row {
             border-color: #3b3038;
@@ -573,8 +610,30 @@
             background: #342431;
             color: #ff8bc8;
         }
-        body.dark .sort-grip {
-            color: #8f647d;
+        body.dark .sort-handle {
+            background: #342431;
+            color: #ff8bc8;
+        }
+        .sort-drag-ghost {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            pointer-events: none;
+            display: grid;
+            grid-template-columns: 34px 46px minmax(0, 1fr);
+            align-items: center;
+            gap: 10px;
+            padding: 9px;
+            border: 2px solid #ff69b4;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 18px 40px rgba(255, 105, 180, 0.34), 0 8px 18px rgba(0, 0, 0, 0.12);
+            transform: rotate(-1.2deg) scale(1.03);
+        }
+        body.dark .sort-drag-ghost {
+            background: #211b20;
+            border-color: #ff8bc8;
         }
         .sort-thumb {
             width: 46px;
@@ -606,29 +665,6 @@
             margin-top: 4px;
             color: #9b9097;
             font-size: 12px;
-        }
-        .sort-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 6px;
-        }
-        .sort-actions button {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            background: #fff0f6;
-            color: #ff4fa8;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .sort-actions button:disabled {
-            opacity: 0.32;
-            cursor: default;
-        }
-        body.dark .sort-actions button {
-            background: #342431;
-            color: #ff8bc8;
         }
         .sort-empty {
             padding: 26px 10px;
@@ -1500,7 +1536,16 @@
                 max-height: 58vh;
             }
             .sort-row {
-                grid-template-columns: 18px 42px minmax(0, 1fr) 70px;
+                grid-template-columns: 32px 42px minmax(0, 1fr);
+                gap: 8px;
+                padding: 7px;
+            }
+            .sort-handle {
+                width: 32px;
+                height: 44px;
+            }
+            .sort-drag-ghost {
+                grid-template-columns: 32px 42px minmax(0, 1fr);
                 gap: 8px;
                 padding: 7px;
             }
@@ -1508,10 +1553,6 @@
                 width: 42px;
                 height: 42px;
                 border-radius: 10px;
-            }
-            .sort-actions button {
-                width: 30px;
-                height: 30px;
             }
             .detail-modal .detail-img-area {
                 width: min(56%, 190px);
@@ -1755,7 +1796,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-drag-feedback';
+    const APP_VERSION = '20260726-drag-ghost-sort';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1881,7 +1922,10 @@
         }
         list.innerHTML = sortDraftRecords.map((r, index) => `
             <div class="sort-row ${sortDragState && String(sortDragState.id) === String(r.id) ? 'dragging' : ''}" data-sort-id="${r.id}">
-                <div class="sort-grip" onpointerdown="startSortLongPress(event, '${r.id}')">⋮⋮</div>
+                <button class="sort-handle" type="button" onpointerdown="startSortLongPress(event, '${r.id}')" aria-label="长按拖动排序">
+                    <span class="sort-index">${index + 1}</span>
+                    <span class="sort-grip">⋮⋮</span>
+                </button>
                 ${r.imageData
                     ? `<img class="sort-thumb" src="${r.imageData}" alt="${escapeHtml(r.name)}">`
                     : '<div class="sort-thumb sort-placeholder">🛍</div>'}
@@ -1889,19 +1933,8 @@
                     <div class="sort-name">${escapeHtml(r.name)}</div>
                     <div class="sort-meta">¥${totalAmount(r).toFixed(2)} · ${escapeHtml(r.status || '未设置')}</div>
                 </div>
-                <div class="sort-actions">
-                    <button type="button" onclick="moveSortDraft(${index}, -1)" ${index === 0 ? 'disabled' : ''} title="上移">↑</button>
-                    <button type="button" onclick="moveSortDraft(${index}, 1)" ${index === sortDraftRecords.length - 1 ? 'disabled' : ''} title="下移">↓</button>
-                </div>
             </div>
         `).join('');
-    }
-
-    function moveSortDraft(index, direction) {
-        const nextIndex = index + direction;
-        if (nextIndex < 0 || nextIndex >= sortDraftRecords.length) return;
-        [sortDraftRecords[index], sortDraftRecords[nextIndex]] = [sortDraftRecords[nextIndex], sortDraftRecords[index]];
-        renderSortList();
     }
 
     function startSortLongPress(event, id) {
@@ -1919,6 +1952,7 @@
                 if (navigator.vibrate) navigator.vibrate(18);
                 document.body.classList.add('sort-dragging');
                 renderSortList();
+                createSortDragGhost(id, event.clientX, event.clientY);
             }, 260),
         };
         window.addEventListener('pointermove', handleSortPointerMove, { passive: false });
@@ -1936,6 +1970,7 @@
         }
         if (!sortDragState.active) return;
         event.preventDefault();
+        moveSortDragGhost(event.clientX, event.clientY);
         const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.sort-row');
         if (!target) return;
         const targetId = target.dataset.sortId;
@@ -1955,9 +1990,47 @@
 
     function clearSortDragState() {
         if (sortDragState?.timer) window.clearTimeout(sortDragState.timer);
+        removeSortDragGhost();
         sortDragState = null;
         document.body.classList.remove('sort-dragging');
         window.removeEventListener('pointermove', handleSortPointerMove);
+    }
+
+    function findSortRowById(id) {
+        return Array.from(document.querySelectorAll('.sort-row')).find(row => String(row.dataset.sortId) === String(id));
+    }
+
+    function createSortDragGhost(id, x, y) {
+        removeSortDragGhost();
+        const row = findSortRowById(id);
+        if (!row || !sortDragState) return;
+        const rect = row.getBoundingClientRect();
+        const ghost = row.cloneNode(true);
+        ghost.classList.remove('dragging');
+        ghost.classList.add('sort-drag-ghost');
+        ghost.removeAttribute('data-sort-id');
+        ghost.querySelectorAll('button').forEach(btn => {
+            btn.removeAttribute('onpointerdown');
+            btn.disabled = true;
+        });
+        sortDragState.ghost = ghost;
+        sortDragState.ghostOffsetX = Math.min(Math.max(x - rect.left, 28), rect.width - 28);
+        sortDragState.ghostOffsetY = Math.min(Math.max(y - rect.top, 24), rect.height - 24);
+        ghost.style.width = `${rect.width}px`;
+        document.body.appendChild(ghost);
+        moveSortDragGhost(x, y);
+    }
+
+    function moveSortDragGhost(x, y) {
+        const ghost = sortDragState?.ghost;
+        if (!ghost) return;
+        ghost.style.left = `${x - sortDragState.ghostOffsetX}px`;
+        ghost.style.top = `${y - sortDragState.ghostOffsetY}px`;
+    }
+
+    function removeSortDragGhost() {
+        const ghost = sortDragState?.ghost;
+        if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
     }
 
     async function saveSortOrder() {
