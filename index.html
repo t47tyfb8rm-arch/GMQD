@@ -506,6 +506,20 @@
             padding: 2px 2px 8px;
             max-height: 58vh;
         }
+        .sort-drag-hint {
+            display: none;
+            margin: -2px 0 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: #fff0f6;
+            color: #ff4fa8;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+        }
+        body.sort-dragging .sort-drag-hint {
+            display: block;
+        }
         .sort-row {
             display: grid;
             grid-template-columns: 22px 46px minmax(0, 1fr) 76px;
@@ -517,15 +531,22 @@
             background: #fffafb;
             user-select: none;
             cursor: grab;
-            transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, border-color 0.16s ease, background 0.16s ease;
         }
         .sort-row.dragging {
-            opacity: 0.72;
-            transform: scale(1.015);
-            box-shadow: 0 10px 24px rgba(255, 105, 180, 0.18);
+            opacity: 0.94;
+            transform: scale(1.035) translateY(-2px);
+            border-color: #ff69b4;
+            background: #fff3f8;
+            box-shadow: 0 14px 30px rgba(255, 105, 180, 0.30);
+            cursor: grabbing;
+            z-index: 2;
         }
         body.sort-dragging {
             overscroll-behavior: contain;
+        }
+        body.sort-dragging .sort-row:not(.dragging) {
+            opacity: 0.56;
         }
         .sort-grip {
             color: #d8a9c2;
@@ -535,9 +556,22 @@
             text-align: center;
             touch-action: none;
         }
+        .sort-row.dragging .sort-grip {
+            color: #ff4fa8;
+            transform: scale(1.2);
+        }
         body.dark .sort-row {
             border-color: #3b3038;
             background: #181316;
+        }
+        body.dark .sort-row.dragging {
+            border-color: #ff8bc8;
+            background: #2a1c27;
+            box-shadow: 0 14px 30px rgba(255, 139, 200, 0.18);
+        }
+        body.dark .sort-drag-hint {
+            background: #342431;
+            color: #ff8bc8;
         }
         body.dark .sort-grip {
             color: #8f647d;
@@ -1702,6 +1736,7 @@
             <h3>调整顺序</h3>
             <button class="close-btn" onclick="closeSortModal()">✕</button>
         </div>
+        <div class="sort-drag-hint">正在拖动，移动到想放的位置</div>
         <div class="sort-list" id="sortList"></div>
         <div class="modal-footer">
             <button type="button" class="btn-cancel" onclick="closeSortModal()">取消</button>
@@ -1720,7 +1755,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-long-press-sort';
+    const APP_VERSION = '20260726-drag-feedback';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1881,6 +1916,7 @@
             timer: window.setTimeout(() => {
                 if (!sortDragState || String(sortDragState.id) !== String(id)) return;
                 sortDragState.active = true;
+                if (navigator.vibrate) navigator.vibrate(18);
                 document.body.classList.add('sort-dragging');
                 renderSortList();
             }, 260),
