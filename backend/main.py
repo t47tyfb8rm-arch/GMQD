@@ -222,6 +222,33 @@ def create_record(record: RecordIn) -> dict[str, Any]:
     return get_record(record_id)
 
 
+def apply_sort_order(sort: SortIn) -> dict[str, Any]:
+    if not sort.ids:
+        return {"ok": True}
+    ts = now_text()
+    with connect() as conn:
+        existing = {
+            row["id"]
+            for row in conn.execute(
+                f"SELECT id FROM records WHERE id IN ({','.join('?' for _ in sort.ids)})",
+                tuple(sort.ids),
+            ).fetchall()
+        }
+        for index, record_id in enumerate(sort.ids):
+            if record_id in existing:
+                conn.execute(
+                    "UPDATE records SET sort_order = ?, updated_at = ? WHERE id = ?",
+                    (index + 1, ts, record_id),
+                )
+        conn.commit()
+    return {"ok": True}
+
+
+@app.put("/api/records/reorder")
+def reorder_records(sort: SortIn) -> dict[str, Any]:
+    return apply_sort_order(sort)
+
+
 @app.get("/api/records/{record_id}")
 def get_record(record_id: int) -> dict[str, Any]:
     with connect() as conn:
@@ -283,25 +310,7 @@ def delete_record(record_id: int) -> dict[str, Any]:
 
 @app.put("/api/records/sort")
 def sort_records(sort: SortIn) -> dict[str, Any]:
-    if not sort.ids:
-        return {"ok": True}
-    ts = now_text()
-    with connect() as conn:
-        existing = {
-            row["id"]
-            for row in conn.execute(
-                f"SELECT id FROM records WHERE id IN ({','.join('?' for _ in sort.ids)})",
-                tuple(sort.ids),
-            ).fetchall()
-        }
-        for index, record_id in enumerate(sort.ids):
-            if record_id in existing:
-                conn.execute(
-                    "UPDATE records SET sort_order = ?, updated_at = ? WHERE id = ?",
-                    (index + 1, ts, record_id),
-                )
-        conn.commit()
-    return {"ok": True}
+    return apply_sort_order(sort)
 
 
 @app.post("/api/import")
