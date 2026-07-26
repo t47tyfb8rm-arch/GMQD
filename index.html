@@ -508,17 +508,39 @@
         }
         .sort-row {
             display: grid;
-            grid-template-columns: 46px minmax(0, 1fr) 76px;
+            grid-template-columns: 22px 46px minmax(0, 1fr) 76px;
             align-items: center;
             gap: 10px;
             padding: 8px;
             border: 1px solid #f4e6ee;
             border-radius: 14px;
             background: #fffafb;
+            user-select: none;
+            cursor: grab;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+        }
+        .sort-row.dragging {
+            opacity: 0.72;
+            transform: scale(1.015);
+            box-shadow: 0 10px 24px rgba(255, 105, 180, 0.18);
+        }
+        body.sort-dragging {
+            overscroll-behavior: contain;
+        }
+        .sort-grip {
+            color: #d8a9c2;
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            touch-action: none;
         }
         body.dark .sort-row {
             border-color: #3b3038;
             background: #181316;
+        }
+        body.dark .sort-grip {
+            color: #8f647d;
         }
         .sort-thumb {
             width: 46px;
@@ -1444,7 +1466,7 @@
                 max-height: 58vh;
             }
             .sort-row {
-                grid-template-columns: 42px minmax(0, 1fr) 70px;
+                grid-template-columns: 18px 42px minmax(0, 1fr) 70px;
                 gap: 8px;
                 padding: 7px;
             }
@@ -1698,12 +1720,13 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-sort-modal-fix';
+    const APP_VERSION = '20260726-long-press-sort';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
     let records = [];
     let sortDraftRecords = [];
+    let sortDragState = null;
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
@@ -1810,6 +1833,7 @@
     }
 
     function closeSortModal() {
+        clearSortDragState();
         document.getElementById('sortModal').classList.remove('active');
         sortDraftRecords = [];
     }
@@ -1821,7 +1845,8 @@
             return;
         }
         list.innerHTML = sortDraftRecords.map((r, index) => `
-            <div class="sort-row">
+            <div class="sort-row ${sortDragState && String(sortDragState.id) === String(r.id) ? 'dragging' : ''}" data-sort-id="${r.id}">
+                <div class="sort-grip" onpointerdown="startSortLongPress(event, '${r.id}')">⋮⋮</div>
                 ${r.imageData
                     ? `<img class="sort-thumb" src="${r.imageData}" alt="${escapeHtml(r.name)}">`
                     : '<div class="sort-thumb sort-placeholder">🛍</div>'}
@@ -1842,6 +1867,61 @@
         if (nextIndex < 0 || nextIndex >= sortDraftRecords.length) return;
         [sortDraftRecords[index], sortDraftRecords[nextIndex]] = [sortDraftRecords[nextIndex], sortDraftRecords[index]];
         renderSortList();
+    }
+
+    function startSortLongPress(event, id) {
+        event.preventDefault();
+        event.stopPropagation();
+        clearSortDragState();
+        sortDragState = {
+            id,
+            startX: event.clientX,
+            startY: event.clientY,
+            active: false,
+            timer: window.setTimeout(() => {
+                if (!sortDragState || String(sortDragState.id) !== String(id)) return;
+                sortDragState.active = true;
+                document.body.classList.add('sort-dragging');
+                renderSortList();
+            }, 260),
+        };
+        window.addEventListener('pointermove', handleSortPointerMove, { passive: false });
+        window.addEventListener('pointerup', finishSortDrag, { once: true });
+        window.addEventListener('pointercancel', finishSortDrag, { once: true });
+    }
+
+    function handleSortPointerMove(event) {
+        if (!sortDragState) return;
+        const dx = Math.abs(event.clientX - sortDragState.startX);
+        const dy = Math.abs(event.clientY - sortDragState.startY);
+        if (!sortDragState.active && (dx > 10 || dy > 10)) {
+            clearSortDragState();
+            return;
+        }
+        if (!sortDragState.active) return;
+        event.preventDefault();
+        const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.sort-row');
+        if (!target) return;
+        const targetId = target.dataset.sortId;
+        if (!targetId || String(targetId) === String(sortDragState.id)) return;
+        const fromIndex = sortDraftRecords.findIndex(r => String(r.id) === String(sortDragState.id));
+        const toIndex = sortDraftRecords.findIndex(r => String(r.id) === String(targetId));
+        if (fromIndex < 0 || toIndex < 0) return;
+        const [dragged] = sortDraftRecords.splice(fromIndex, 1);
+        sortDraftRecords.splice(toIndex, 0, dragged);
+        renderSortList();
+    }
+
+    function finishSortDrag() {
+        clearSortDragState();
+        renderSortList();
+    }
+
+    function clearSortDragState() {
+        if (sortDragState?.timer) window.clearTimeout(sortDragState.timer);
+        sortDragState = null;
+        document.body.classList.remove('sort-dragging');
+        window.removeEventListener('pointermove', handleSortPointerMove);
     }
 
     async function saveSortOrder() {
