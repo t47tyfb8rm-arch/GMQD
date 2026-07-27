@@ -1789,7 +1789,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260726-long-press-title-number';
+    const APP_VERSION = '20260727-detail-channel-quantity-swap';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -2518,12 +2518,12 @@
         list.innerHTML = `
             <li><span class="icon">🏷</span><span class="label">品牌</span><span class="value">${escapeHtml(r.brand || '—')}</span></li>
             <li><span class="icon">📏</span><span class="label">尺码</span><span class="value">${escapeHtml(r.orderNo || '—')}</span></li>
-            <li><span class="icon">N</span><span class="label">数量</span><span class="value">${r.quantity}</span></li>
+            <li><span class="icon">渠</span><span class="label">渠道</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
             <li><span class="icon">♥</span><span class="label">状态</span><span class="value">${r.status}</span></li>
             <li class="wide payment-detail-row"><span class="icon">票</span><span class="label">付款</span><span class="value">${paymentDetailHtml(r)}</span></li>
             <li><span class="icon">¥</span><span class="label">合计</span><span class="value price">¥${totalAmount(r).toFixed(2)}</span></li>
             <li><span class="icon">日</span><span class="label">日期</span><span class="value">${escapeHtml(r.date || '—')}</span></li>
-            <li><span class="icon">渠</span><span class="label">渠道</span><span class="value">${escapeHtml(r.platform || '—')}</span></li>
+            <li><span class="icon">N</span><span class="label">数量</span><span class="value">${r.quantity}</span></li>
             <li><span class="icon">记</span><span class="label">备注</span><span class="value">${note}</span></li>
         `;
         document.getElementById('detailModal').classList.add('active');
