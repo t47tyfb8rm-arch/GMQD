@@ -14,18 +14,36 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
             background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 244, 249, 0.94) 42%, #fff7fa),
-                repeating-linear-gradient(90deg, rgba(255, 211, 226, 0.18) 0 1px, transparent 1px 72px);
+                linear-gradient(180deg, rgba(255,255,255,0.76), rgba(255,246,249,0.88) 38%, rgba(250,252,246,0.96)),
+                linear-gradient(90deg, rgba(225,214,187,0.26), transparent 22%, rgba(207,226,215,0.22) 78%, rgba(225,214,187,0.22)),
+                repeating-linear-gradient(90deg, rgba(185, 148, 111, 0.10) 0 1px, transparent 1px 72px);
             color: #333;
             min-height: 100vh;
             transition: background 0.2s, color 0.2s;
             overflow-x: hidden;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                linear-gradient(90deg, transparent 0 7%, rgba(255,255,255,0.36) 7% 7.6%, transparent 7.6% 33%, rgba(192,155,114,0.14) 33% 33.4%, transparent 33.4% 66%, rgba(192,155,114,0.12) 66% 66.4%, transparent 66.4% 93%, rgba(255,255,255,0.32) 93% 93.6%, transparent 93.6%),
+                repeating-linear-gradient(180deg, transparent 0 118px, rgba(192,155,114,0.07) 118px 120px, rgba(255,255,255,0.38) 120px 122px, transparent 122px 190px);
+            pointer-events: none;
         }
         body.dark {
             background:
-                linear-gradient(180deg, #171116, #1e171d 48%, #161316),
-                repeating-linear-gradient(90deg, rgba(255, 139, 200, 0.06) 0 1px, transparent 1px 72px);
+                linear-gradient(180deg, #151214, #1d171d 46%, #121414),
+                linear-gradient(90deg, rgba(130,112,82,0.16), transparent 28%, rgba(66,104,93,0.12) 78%, rgba(130,112,82,0.12)),
+                repeating-linear-gradient(90deg, rgba(255, 215, 154, 0.05) 0 1px, transparent 1px 72px);
             color: #f3edf2;
+        }
+        body.dark::before {
+            background:
+                linear-gradient(90deg, transparent 0 7%, rgba(255,255,255,0.04) 7% 7.6%, transparent 7.6% 33%, rgba(235,188,122,0.08) 33% 33.4%, transparent 33.4% 66%, rgba(235,188,122,0.08) 66% 66.4%, transparent 66.4% 93%, rgba(255,255,255,0.04) 93% 93.6%, transparent 93.6%),
+                repeating-linear-gradient(180deg, transparent 0 118px, rgba(235,188,122,0.06) 118px 120px, rgba(255,255,255,0.04) 120px 122px, transparent 122px 190px);
         }
 
         /* ===== 顶部 ===== */
@@ -133,17 +151,30 @@
         .header-info {
             position: relative;
             overflow: hidden;
-            padding: 20px 20px 12px;
+            padding: 22px 20px 14px;
             background:
-                linear-gradient(135deg, rgba(255,255,255,0.94), rgba(255,238,247,0.86)),
-                linear-gradient(90deg, rgba(255, 196, 219, 0.28), transparent 58%);
-            border-bottom: 1px solid rgba(255, 185, 214, 0.36);
+                linear-gradient(135deg, rgba(255,255,255,0.96), rgba(255,244,248,0.84) 58%, rgba(246,251,244,0.9)),
+                linear-gradient(90deg, rgba(206,166,113,0.18), transparent 42%, rgba(151,185,169,0.15));
+            border-bottom: 1px solid rgba(196, 155, 105, 0.20);
+            box-shadow: inset 0 -1px 0 rgba(255,255,255,0.72);
         }
         body.dark .header-info {
             background:
-                linear-gradient(135deg, rgba(34, 27, 33, 0.96), rgba(25, 18, 24, 0.96)),
-                linear-gradient(90deg, rgba(255, 139, 200, 0.12), transparent 58%);
-            border-bottom-color: rgba(255, 139, 200, 0.12);
+                linear-gradient(135deg, rgba(32, 27, 30, 0.96), rgba(20, 18, 20, 0.96) 58%, rgba(18, 25, 23, 0.92)),
+                linear-gradient(90deg, rgba(224,181,115,0.11), transparent 42%, rgba(119,163,145,0.09));
+            border-bottom-color: rgba(224,181,115,0.12);
+        }
+        .header-info::before {
+            content: "";
+            position: absolute;
+            inset: 10px 14px auto;
+            height: 36px;
+            border-radius: 18px;
+            background:
+                linear-gradient(90deg, transparent, rgba(255,255,255,0.42), transparent),
+                repeating-linear-gradient(90deg, rgba(196,155,105,0.14) 0 1px, transparent 1px 68px);
+            opacity: 0.64;
+            pointer-events: none;
         }
         .header-info::after {
             content: "";
@@ -152,7 +183,7 @@
             right: 20px;
             bottom: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 105, 180, 0.62), transparent);
+            background: linear-gradient(90deg, transparent, rgba(196, 155, 105, 0.72), rgba(255, 133, 184, 0.42), transparent);
             animation: wardrobeLight 4.8s ease-in-out infinite;
         }
         .header-topline {
@@ -261,12 +292,14 @@
             grid-template-columns: repeat(3, minmax(0, 1fr));
             column-gap: 18px;
             row-gap: 34px;
-            padding: 34px 34px 112px;
+            padding: 38px 34px 116px;
             background:
-                linear-gradient(90deg, rgba(255,255,255,0.92) 0 10px, transparent 10px calc(100% - 10px), rgba(255,255,255,0.92) calc(100% - 10px)),
-                linear-gradient(180deg, rgba(255, 251, 253, 0.96), rgba(255, 241, 248, 0.9));
-            border-radius: 0 0 26px 26px;
-            box-shadow: inset 0 14px 34px rgba(255, 209, 226, 0.34);
+                linear-gradient(90deg, rgba(255,255,255,0.94) 0 10px, transparent 10px calc(100% - 10px), rgba(255,255,255,0.94) calc(100% - 10px)),
+                linear-gradient(180deg, rgba(255, 252, 250, 0.98), rgba(248, 251, 244, 0.9));
+            border-radius: 0 0 28px 28px;
+            box-shadow:
+                inset 0 14px 36px rgba(195, 160, 118, 0.13),
+                inset 0 -18px 34px rgba(255, 226, 237, 0.34);
         }
         .product-grid::before {
             content: "";
@@ -278,15 +311,15 @@
                 repeating-linear-gradient(
                     to bottom,
                     transparent 0 132px,
-                    rgba(255, 205, 222, 0.72) 132px 136px,
-                    rgba(255, 255, 255, 0.72) 136px 140px,
+                    rgba(197, 158, 109, 0.30) 132px 135px,
+                    rgba(255, 255, 255, 0.82) 135px 139px,
                     transparent 140px 174px
                 ),
                 repeating-linear-gradient(
                     to right,
-                    rgba(255, 213, 228, 0.42) 0 2px,
+                    rgba(197, 158, 109, 0.18) 0 2px,
                     transparent 2px calc(33.333% - 1px),
-                    rgba(255, 213, 228, 0.42) calc(33.333% - 1px) 33.333%
+                    rgba(151, 185, 169, 0.16) calc(33.333% - 1px) 33.333%
                 );
             pointer-events: none;
         }
@@ -295,9 +328,9 @@
             position: absolute;
             inset: 0;
             z-index: -1;
-            background: linear-gradient(105deg, transparent 0 34%, rgba(255,255,255,0.42) 45%, transparent 56%);
+            background: linear-gradient(105deg, transparent 0 34%, rgba(255,255,255,0.48) 45%, rgba(242, 214, 164, 0.16) 49%, transparent 58%);
             transform: translateX(-70%);
-            animation: cabinetSweep 7s ease-in-out infinite;
+            animation: cabinetSweep 8.6s ease-in-out infinite;
             pointer-events: none;
         }
         .product-card {
@@ -335,12 +368,13 @@
             width: 100%;
             aspect-ratio: 1 / 1;
             background:
-                linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,246,250,0.9));
+                linear-gradient(145deg, rgba(255,255,255,0.98), rgba(255,249,248,0.94));
             overflow: hidden;
-            border: 1px solid rgba(255, 218, 232, 0.78);
+            border: 1px solid rgba(214, 177, 128, 0.24);
             border-radius: 20px;
             box-shadow:
-                0 12px 24px rgba(198, 112, 148, 0.13),
+                0 14px 28px rgba(145, 111, 82, 0.12),
+                0 3px 10px rgba(255, 126, 176, 0.08),
                 inset 0 1px 0 rgba(255,255,255,0.9);
             transform: translateZ(0);
         }
@@ -350,7 +384,7 @@
             inset: 0;
             border-radius: inherit;
             background:
-                linear-gradient(135deg, rgba(255,255,255,0.34), transparent 38%),
+                linear-gradient(135deg, rgba(255,255,255,0.40), transparent 38%),
                 linear-gradient(180deg, transparent 72%, rgba(0,0,0,0.04));
             pointer-events: none;
         }
@@ -1945,13 +1979,14 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v2-cabinet-stage';
+    const APP_VERSION = '20260728-v2-cabinet-polish';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
     let records = [];
     let sortDraftRecords = [];
     let sortDragState = null;
+    let isSavingRecord = false;
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
@@ -1963,15 +1998,26 @@
         });
         if (!response.ok) {
             const text = await response.text();
-            throw new Error(text || `请求失败：${response.status}`);
+            let message = text || `请求失败：${response.status}`;
+            try {
+                const parsed = JSON.parse(text);
+                message = parsed.detail || parsed.message || message;
+            } catch (error) {
+                // Keep the raw server text when it is not JSON.
+            }
+            throw new Error(message);
         }
         if (response.status === 204) return null;
         return response.json();
     }
 
     async function loadRecordsFromApi() {
+        const grid = document.getElementById('productGrid');
+        if (grid && records.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><div class="empty-icon"></div><div class="empty-text">衣柜整理中...</div><div class="empty-subtext">正在把小衣服摆进柜子</div></div>`;
+        }
         try {
-            records = await apiRequest('/api/records');
+            records = await apiRequest('/api/records/summary');
             renderGrid();
         } catch (error) {
             document.getElementById('productGrid').innerHTML =
@@ -2024,10 +2070,13 @@
             return;
         }
 
+        const imageSrc = (r) => r.imageData || r.imageUrl || (r.hasImage ? `/api/records/${r.id}/image` : '');
         grid.innerHTML = filtered.map((r, index) => `
             <div class="product-card" style="animation-delay:${Math.min(index * 42, 360)}ms" onclick="openDetail('${r.id}')">
                     <div class="img-wrap">
-                        ${r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '<div class="placeholder-icon">🛍</div>'}
+                        ${imageSrc(r)
+                            ? `<img src="${imageSrc(r)}" alt="${escapeHtml(r.name)}" loading="${index < 12 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index < 12 ? 'high' : 'low'}">`
+                            : '<div class="placeholder-icon">🛍</div>'}
                         ${r.status ? `<div class="tag">${escapeHtml(r.status)}</div>` : ''}
                         <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
                     </div>
@@ -2280,9 +2329,12 @@
         resetFormModalScroll();
     }
 
-    function openEditModal(id) {
-        const r = records.find(x => x.id == id);
+    async function openEditModal(id) {
+        let r = records.find(x => x.id == id);
         if (!r) return;
+        if (r.hasImage && !r.imageData) {
+            r = await loadFullRecord(id) || r;
+        }
         document.getElementById('formModalTitle').textContent = '编辑记录';
         document.getElementById('editId').value = r.id;
         document.getElementById('formName').value = r.name;
@@ -2305,6 +2357,18 @@
         document.getElementById('formNote').value = r.note || '';
         document.getElementById('formModal').classList.add('active');
         resetFormModalScroll();
+    }
+
+    async function loadFullRecord(id) {
+        try {
+            const fullRecord = await apiRequest(`/api/records/${id}`);
+            const index = records.findIndex(r => String(r.id) === String(fullRecord.id));
+            if (index >= 0) records.splice(index, 1, fullRecord);
+            return fullRecord;
+        } catch (error) {
+            console.warn('完整记录加载失败', id, error);
+            return null;
+        }
     }
 
     function closeFormModal() {
@@ -2590,6 +2654,14 @@
 
     async function saveRecord(e) {
         e.preventDefault();
+        if (isSavingRecord) return;
+        isSavingRecord = true;
+        const submitBtn = document.querySelector('#recordForm .btn-save');
+        const originalText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '保存中...';
+        }
         const editId = document.getElementById('editId').value;
         const data = {
             name: document.getElementById('formName').value.trim(),
@@ -2611,23 +2683,44 @@
         };
 
         try {
+            let savedRecord;
             if (editId) {
-                await apiRequest(`/api/records/${editId}`, {
+                savedRecord = await apiRequest(`/api/records/${editId}`, {
                     method: 'PUT',
                     body: JSON.stringify(data),
                 });
             } else {
-                await apiRequest('/api/records', {
+                savedRecord = await apiRequest('/api/records', {
                     method: 'POST',
                     body: JSON.stringify(data),
                 });
             }
-            await loadRecordsFromApi();
+            applySavedRecord(savedRecord);
             closeFormModal();
         } catch (error) {
-            alert('保存到数据库失败，请检查后端服务。');
+            alert(`保存到数据库失败：${error.message || '请检查后端服务。'}`);
             console.error(error);
+        } finally {
+            isSavingRecord = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText || '保存';
+            }
         }
+    }
+
+    function applySavedRecord(savedRecord) {
+        if (!savedRecord || !savedRecord.id) {
+            loadRecordsFromApi();
+            return;
+        }
+        const index = records.findIndex(r => String(r.id) === String(savedRecord.id));
+        if (index >= 0) {
+            records.splice(index, 1, savedRecord);
+        } else {
+            records.unshift(savedRecord);
+        }
+        renderGrid();
     }
 
     function totalFromForm() {
@@ -2666,9 +2759,10 @@
         currentDetailId = r.id;
         document.getElementById('detailTitle').textContent = r.name;
         const detailImage = document.querySelector('.detail-img-area');
-        detailImage.classList.toggle('has-image', !!r.imageData);
-        detailImage.innerHTML = r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '🛍';
-        detailImage.onclick = r.imageData ? () => openImageViewer(r.imageData, r.name) : null;
+        const detailImageSrc = r.imageData || r.imageUrl || (r.hasImage ? `/api/records/${r.id}/image` : '');
+        detailImage.classList.toggle('has-image', !!detailImageSrc);
+        detailImage.innerHTML = detailImageSrc ? `<img src="${detailImageSrc}" alt="${escapeHtml(r.name)}">` : '🛍';
+        detailImage.onclick = detailImageSrc ? () => openImageViewer(detailImageSrc, r.name) : null;
         const list = document.getElementById('detailList');
         const note = r.note ? escapeHtml(r.note) : '—';
         list.innerHTML = `
@@ -2712,13 +2806,29 @@
 
     async function deleteFromDetail() {
         if (currentDetailId && confirm('确定要删除这条记录吗？')) {
+            const deleteId = currentDetailId;
+            const deleteBtn = document.querySelector('.detail-actions .btn-delete');
+            const originalText = deleteBtn ? deleteBtn.textContent : '';
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = '删除中...';
+            }
             try {
-                await apiRequest(`/api/records/${currentDetailId}`, { method: 'DELETE' });
+                await apiRequest('/api/records/delete', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: Number(deleteId) }),
+                });
+                records = records.filter(r => String(r.id) !== String(deleteId));
                 closeDetailModal();
-                await loadRecordsFromApi();
+                renderGrid();
             } catch (error) {
-                alert('从数据库删除失败，请检查后端服务。');
+                alert(`从数据库删除失败：${error.message || '请检查后端服务。'}`);
                 console.error(error);
+            } finally {
+                if (deleteBtn) {
+                    deleteBtn.disabled = false;
+                    deleteBtn.textContent = originalText || '删除';
+                }
             }
         }
     }
