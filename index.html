@@ -1819,7 +1819,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-lazy-image-load';
+    const APP_VERSION = '20260728-v1-native-image-load';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1827,12 +1827,6 @@
     let sortDraftRecords = [];
     let sortDragState = null;
     let isSavingRecord = false;
-    let imageHydrationToken = 0;
-    let imageObserver = null;
-    let activeImageLoads = 0;
-    const pendingImageIds = new Set();
-    const loadingImageIds = new Set();
-    const MAX_ACTIVE_IMAGE_LOADS = 2;
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
@@ -1865,85 +1859,11 @@
         try {
             records = await apiRequest('/api/records/summary');
             renderGrid();
-            hydrateRecordImages();
         } catch (error) {
             document.getElementById('productGrid').innerHTML =
                 `<div class="empty-state"><div class="empty-icon">!</div><div class="empty-text">数据库连接失败，请确认后端服务已启动</div></div>`;
             console.error(error);
         }
-    }
-
-    async function hydrateRecordImages() {
-        imageHydrationToken++;
-        pendingImageIds.clear();
-        loadingImageIds.clear();
-        activeImageLoads = 0;
-        observeVisibleCardImages();
-    }
-
-    function observeVisibleCardImages() {
-        const targets = Array.from(document.querySelectorAll('[data-image-record-id]'))
-            .filter(el => {
-                const id = el.dataset.imageRecordId;
-                const record = records.find(r => String(r.id) === String(id));
-                return record && record.hasImage && !record.imageData;
-            });
-        if (imageObserver) imageObserver.disconnect();
-        if (!targets.length) return;
-        if (!('IntersectionObserver' in window)) {
-            targets.slice(0, 12).forEach(el => enqueueImageHydration(el.dataset.imageRecordId));
-            return;
-        }
-        imageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) return;
-                imageObserver.unobserve(entry.target);
-                enqueueImageHydration(entry.target.dataset.imageRecordId);
-            });
-        }, { rootMargin: '280px 0px' });
-        targets.forEach(el => imageObserver.observe(el));
-    }
-
-    function enqueueImageHydration(id) {
-        if (!id || pendingImageIds.has(String(id)) || loadingImageIds.has(String(id))) return;
-        pendingImageIds.add(String(id));
-        pumpImageHydrationQueue();
-    }
-
-    function pumpImageHydrationQueue() {
-        while (activeImageLoads < MAX_ACTIVE_IMAGE_LOADS && pendingImageIds.size) {
-            const id = pendingImageIds.values().next().value;
-            pendingImageIds.delete(id);
-            loadCardImage(id);
-        }
-    }
-
-    async function loadCardImage(id) {
-        const token = imageHydrationToken;
-        activeImageLoads++;
-        loadingImageIds.add(String(id));
-        try {
-            const fullRecord = await apiRequest(`/api/records/${id}`);
-            if (token !== imageHydrationToken) return;
-            const index = records.findIndex(r => String(r.id) === String(fullRecord.id));
-            if (index >= 0) records.splice(index, 1, fullRecord);
-            updateCardImage(fullRecord);
-        } catch (error) {
-            console.warn('图片加载失败', id, error);
-        } finally {
-            activeImageLoads = Math.max(0, activeImageLoads - 1);
-            loadingImageIds.delete(String(id));
-            pumpImageHydrationQueue();
-        }
-    }
-
-    function updateCardImage(record) {
-        if (!record || !record.imageData) return;
-        document.querySelectorAll(`[data-image-record-id="${record.id}"]`).forEach(box => {
-            const slot = box.querySelector('.card-image-slot');
-            if (!slot) return;
-            slot.innerHTML = `<img src="${record.imageData}" alt="${escapeHtml(record.name)}" loading="lazy" decoding="async">`;
-        });
     }
 
     function applyTheme(theme) {
@@ -1990,13 +1910,14 @@
             return;
         }
 
+        const imageSrc = (r) => r.imageData || r.imageUrl || (r.hasImage ? `/api/records/${r.id}/image` : '');
         grid.innerHTML = filtered.map((r) => `
             <div class="product-card" data-id="${r.id}" onclick="openDetail('${r.id}')">
                     <div class="img-wrap" data-image-record-id="${r.id}">
                         <div class="card-image-slot">
-                            ${r.imageData
-                                ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}" loading="lazy" decoding="async">`
-                                : `<div class="placeholder-icon ${r.hasImage ? 'image-loading' : ''}">🛍</div>`}
+                            ${imageSrc(r)
+                                ? `<img src="${imageSrc(r)}" alt="${escapeHtml(r.name)}" loading="lazy" decoding="async">`
+                                : '<div class="placeholder-icon">🛍</div>'}
                         </div>
                         ${r.status ? `<div class="tag">${escapeHtml(r.status)}</div>` : ''}
                         <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
@@ -2007,7 +1928,6 @@
                     </div>
                 </div>
             `).join('');
-        observeVisibleCardImages();
 
     }
 
