@@ -103,12 +103,9 @@ def main() -> None:
     html = html.replace(VERSION_FROM, VERSION_TO)
 
     if "single-row name-row" not in html:
-        start = html.find(
-            '            <div class="form-row two-col">\\n'
-            '                <div class="form-group">\\n'
-            '                    <label>商品名称 *'
-        )
-        end = html.find('            <div class="form-row item-row">', start)
+        name_label = html.find("<label>商品名称 *</label>")
+        start = html.rfind('<div class="form-row two-col">', 0, name_label)
+        end = html.find('<div class="form-row item-row">', name_label)
         if start == -1 or end == -1:
             raise SystemExit("未找到表单字段位置，未修改。")
         html = html[:start] + FORM_BLOCK + html[end:]
