@@ -1603,6 +1603,219 @@
                 grid-template-columns: repeat(4, 1fr);
             }
         }
+
+        /* V1 form modal polish */
+        .modal-content.form-modal-content {
+            width: min(94vw, 560px);
+            max-width: 560px;
+            max-height: calc(100dvh - 22px);
+            padding: 20px 20px 18px;
+            border-radius: 26px;
+            background:
+                linear-gradient(180deg, #ffffff, #fffafb);
+            box-shadow:
+                0 24px 56px rgba(52, 33, 43, 0.18),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        body.dark .modal-content.form-modal-content {
+            background: linear-gradient(180deg, #241d23, #1b151a);
+            box-shadow: 0 24px 56px rgba(0,0,0,0.42);
+        }
+        .form-modal-content .modal-header {
+            margin-bottom: 14px;
+        }
+        .form-modal-content .modal-header h3 {
+            font-size: 24px;
+            line-height: 1.1;
+        }
+        .form-modal-content .modal-header .close-btn {
+            width: 34px;
+            height: 34px;
+            font-size: 17px;
+        }
+        .form-modal-content > form > .form-group:first-of-type {
+            margin-bottom: 14px;
+            padding: 12px;
+            border: 1px solid #f4e5ec;
+            border-radius: 18px;
+            background: #fffafb;
+        }
+        body.dark .form-modal-content > form > .form-group:first-of-type {
+            background: #171216;
+            border-color: #332a31;
+        }
+        .form-modal-content .image-uploader {
+            grid-template-columns: 78px 1fr;
+            gap: 14px;
+        }
+        .form-modal-content .image-preview {
+            width: 78px;
+            height: 78px;
+            border-radius: 16px;
+            font-size: 28px;
+        }
+        .form-modal-content .image-actions {
+            gap: 10px;
+            align-content: center;
+        }
+        .form-modal-content .image-actions label,
+        .form-modal-content .image-actions button {
+            min-height: 34px;
+            padding: 8px 13px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .form-modal-content .form-row {
+            gap: 10px;
+            margin-bottom: 2px;
+        }
+        .form-modal-content .form-row.two-col {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .form-modal-content .item-row {
+            grid-template-columns: 0.92fr 0.72fr 1.22fr;
+        }
+        .form-modal-content .form-row > .form-group {
+            min-height: 50px;
+            margin-bottom: 8px;
+            padding: 8px 11px;
+            border-radius: 16px;
+            border-color: #f1e0e8;
+            background: #fff;
+            box-shadow: 0 4px 14px rgba(255, 105, 180, 0.06);
+        }
+        .form-modal-content .form-row > .form-group label {
+            font-size: 12px;
+            color: #9b8f96;
+        }
+        .form-modal-content .form-row > .form-group input,
+        .form-modal-content .form-row > .form-group select {
+            height: 30px;
+            min-height: 30px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2b2428;
+        }
+        body.dark .form-modal-content .form-row > .form-group {
+            background: #171216;
+            border-color: #332a31;
+            box-shadow: none;
+        }
+        .form-modal-content .brand-custom-input.active,
+        .form-modal-content .platform-custom-input.active {
+            margin-left: 8px;
+            padding-left: 8px !important;
+            border-left: 1px solid #f1e0e8 !important;
+        }
+        .form-modal-content .payment-summary-box {
+            min-height: 52px;
+            padding: 10px 12px;
+            border-radius: 16px;
+            border-color: #f1e0e8;
+            background: #fffafb;
+            box-shadow: 0 4px 14px rgba(255, 105, 180, 0.06);
+        }
+        .form-modal-content .payment-summary-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2b2428;
+        }
+        body.dark .form-modal-content .payment-summary-text {
+            color: #f3edf2;
+        }
+        .form-modal-content .payment-summary-box button {
+            min-height: 34px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+        .form-modal-content .form-group .radio-group {
+            gap: 9px;
+        }
+        .form-modal-content .form-group .radio-group label {
+            padding: 8px 13px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .form-modal-content textarea#formNote {
+            min-height: 58px;
+            height: 58px;
+            border-radius: 16px;
+            padding: 10px 12px;
+            font-size: 14px;
+            background: #fffafb;
+        }
+        .form-modal-content .modal-footer {
+            position: sticky;
+            bottom: -18px;
+            margin: 12px -2px 0;
+            padding-top: 8px;
+            background: linear-gradient(180deg, rgba(255,255,255,0), #fff 38%);
+        }
+        body.dark .form-modal-content .modal-footer {
+            background: linear-gradient(180deg, rgba(36,29,35,0), #241d23 38%);
+        }
+        .form-modal-content .modal-footer button {
+            min-height: 46px;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+        @media (max-width: 400px) {
+            .modal-content.form-modal-content {
+                width: min(100%, 392px);
+                padding: 18px 16px 16px;
+                border-radius: 24px;
+            }
+            .form-modal-content .modal-header {
+                margin-bottom: 12px;
+            }
+            .form-modal-content .modal-header h3 {
+                font-size: 22px;
+            }
+            .form-modal-content .image-uploader {
+                grid-template-columns: 68px 1fr;
+                gap: 12px;
+            }
+            .form-modal-content .image-preview {
+                width: 68px;
+                height: 68px;
+                border-radius: 15px;
+                font-size: 25px;
+            }
+            .form-modal-content .form-row {
+                gap: 8px;
+            }
+            .form-modal-content .form-row > .form-group {
+                min-height: 46px;
+                padding: 7px 10px;
+                margin-bottom: 7px;
+            }
+            .form-modal-content .form-row > .form-group input,
+            .form-modal-content .form-row > .form-group select {
+                height: 28px;
+                min-height: 28px;
+                font-size: 14px;
+            }
+            .form-modal-content .item-row {
+                grid-template-columns: 0.92fr 0.72fr 1.22fr;
+                column-gap: 8px;
+            }
+            .form-modal-content .payment-summary-box {
+                min-height: 48px;
+            }
+            .form-modal-content textarea#formNote {
+                min-height: 52px;
+                height: 52px;
+            }
+            .form-modal-content .modal-footer button {
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1819,7 +2032,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-filtered-total-fix';
+    const APP_VERSION = '20260728-v1-form-modal-polish';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
