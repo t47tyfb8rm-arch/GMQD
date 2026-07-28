@@ -1819,7 +1819,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-inline-first-nine';
+    const APP_VERSION = '20260728-v1-inline-first-twelve';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1916,7 +1916,7 @@
                     <div class="img-wrap" data-image-record-id="${r.id}">
                         <div class="card-image-slot">
                             ${imageSrc(r)
-                                ? `<img src="${imageSrc(r)}" alt="${escapeHtml(r.name)}" loading="${index < 9 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index < 9 ? 'high' : 'low'}">`
+                                ? `<img src="${imageSrc(r)}" alt="${escapeHtml(r.name)}" loading="${index < 12 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index < 12 ? 'high' : 'low'}">`
                                 : '<div class="placeholder-icon">🛍</div>'}
                         </div>
                         ${r.status ? `<div class="tag">${escapeHtml(r.status)}</div>` : ''}
