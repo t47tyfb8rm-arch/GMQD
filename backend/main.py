@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
+import base64
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 
 
@@ -93,7 +94,22 @@ def row_to_summary(row: sqlite3.Row) -> dict[str, Any]:
     record = row_to_record(row)
     record["imageData"] = ""
     record["hasImage"] = bool(row["image_data"] or "")
+    record["imageUrl"] = f"/api/records/{row['id']}/image" if record["hasImage"] else ""
     return record
+
+
+def parse_image_data(image_data: str) -> tuple[bytes, str]:
+    if not image_data:
+        raise HTTPException(status_code=404, detail="Image not found")
+    media_type = "image/jpeg"
+    payload = image_data
+    if image_data.startswith("data:") and "," in image_data:
+        header, payload = image_data.split(",", 1)
+        media_type = header.split(";", 1)[0].replace("data:", "") or media_type
+    try:
+        return base64.b64decode(payload, validate=False), media_type
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="Image decode failed") from exc
 
 
 def execute_write(sql: str, params: tuple[Any, ...]) -> int:
@@ -275,6 +291,23 @@ def apply_sort_order(sort: SortIn) -> dict[str, Any]:
 @app.put("/api/records/reorder")
 def reorder_records(sort: SortIn) -> dict[str, Any]:
     return apply_sort_order(sort)
+
+
+@app.get("/api/records/{record_id}/image")
+def get_record_image(record_id: int) -> Response:
+    with connect() as conn:
+        row = conn.execute("SELECT image_data, updated_at FROM records WHERE id = ?", (record_id,)).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Record not found")
+    content, media_type = parse_image_data(row["image_data"] or "")
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={
+            "Cache-Control": "private, max-age=86400",
+            "ETag": f'W/"record-{record_id}-{row["updated_at"]}"',
+        },
+    )
 
 
 @app.get("/api/records/{record_id}")
