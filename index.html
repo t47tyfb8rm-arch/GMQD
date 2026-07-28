@@ -946,6 +946,10 @@
             cursor: pointer;
             transition: opacity 0.2s;
         }
+        .modal-footer button:disabled {
+            opacity: 0.62;
+            cursor: not-allowed;
+        }
 
         .form-modal-content {
             max-height: calc(100dvh - 28px);
@@ -1789,13 +1793,14 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260727-detail-channel-quantity-swap';
+    const APP_VERSION = '20260728-v1-save-load-feedback';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
     let records = [];
     let sortDraftRecords = [];
     let sortDragState = null;
+    let isSavingRecord = false;
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
@@ -1814,6 +1819,10 @@
     }
 
     async function loadRecordsFromApi() {
+        const grid = document.getElementById('productGrid');
+        if (grid && records.length === 0) {
+            grid.innerHTML = `<div class="empty-state"><div class="empty-icon"></div><div class="empty-text">衣柜整理中...</div><div class="empty-subtext">正在把小衣服摆进柜子</div></div>`;
+        }
         try {
             records = await apiRequest('/api/records');
             renderGrid();
@@ -2434,6 +2443,14 @@
 
     async function saveRecord(e) {
         e.preventDefault();
+        if (isSavingRecord) return;
+        isSavingRecord = true;
+        const submitBtn = document.querySelector('#recordForm .btn-save');
+        const originalText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '保存中...';
+        }
         const editId = document.getElementById('editId').value;
         const data = {
             name: document.getElementById('formName').value.trim(),
@@ -2455,23 +2472,44 @@
         };
 
         try {
+            let savedRecord;
             if (editId) {
-                await apiRequest(`/api/records/${editId}`, {
+                savedRecord = await apiRequest(`/api/records/${editId}`, {
                     method: 'PUT',
                     body: JSON.stringify(data),
                 });
             } else {
-                await apiRequest('/api/records', {
+                savedRecord = await apiRequest('/api/records', {
                     method: 'POST',
                     body: JSON.stringify(data),
                 });
             }
-            await loadRecordsFromApi();
+            applySavedRecord(savedRecord, !!editId);
             closeFormModal();
         } catch (error) {
             alert('保存到数据库失败，请检查后端服务。');
             console.error(error);
+        } finally {
+            isSavingRecord = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText || '保存';
+            }
         }
+    }
+
+    function applySavedRecord(savedRecord, isEdit) {
+        if (!savedRecord || !savedRecord.id) {
+            loadRecordsFromApi();
+            return;
+        }
+        const index = records.findIndex(r => String(r.id) === String(savedRecord.id));
+        if (index >= 0) {
+            records.splice(index, 1, savedRecord);
+        } else {
+            records.unshift(savedRecord);
+        }
+        renderGrid();
     }
 
     function totalFromForm() {
@@ -2582,7 +2620,6 @@
     // ===== 初始化 =====
     applyTheme(getThemeByTime());
     window.GMQD_VERSION = APP_VERSION;
-    renderGrid();
     loadRecordsFromApi();
 
     // 点击蒙层关闭弹窗
