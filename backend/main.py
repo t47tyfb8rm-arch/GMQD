@@ -90,10 +90,11 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
-def row_to_summary(row: sqlite3.Row) -> dict[str, Any]:
+def row_to_summary(row: sqlite3.Row, include_image: bool = False) -> dict[str, Any]:
     record = row_to_record(row)
-    record["imageData"] = ""
     record["hasImage"] = bool(row["image_data"] or "")
+    if not include_image:
+        record["imageData"] = ""
     record["imageUrl"] = f"/api/records/{row['id']}/image" if record["hasImage"] else ""
     return record
 
@@ -214,18 +215,40 @@ def list_records() -> list[dict[str, Any]]:
 @app.get("/api/records/summary")
 def list_record_summaries() -> list[dict[str, Any]]:
     with connect() as conn:
-        rows = conn.execute(
-            """
-            SELECT id, name, brand, platform, order_no, payment_type, has_shipping,
-                   price, deposit_amount, balance_amount, shipping_amount,
-                   payment_details, quantity, status, purchase_date, note,
-                   CASE WHEN image_data != '' THEN '1' ELSE '' END AS image_data,
-                   sort_order, created_at, updated_at
-            FROM records
-            ORDER BY sort_order ASC, id DESC
-            """
+        first_rows = conn.execute(
+            "SELECT * FROM records ORDER BY sort_order ASC, id DESC LIMIT 9"
         ).fetchall()
-    return [row_to_summary(row) for row in rows]
+        first_ids = [row["id"] for row in first_rows]
+        if first_ids:
+            placeholders = ",".join("?" for _ in first_ids)
+            rest_rows = conn.execute(
+                f"""
+                SELECT id, name, brand, platform, order_no, payment_type, has_shipping,
+                       price, deposit_amount, balance_amount, shipping_amount,
+                       payment_details, quantity, status, purchase_date, note,
+                       CASE WHEN image_data != '' THEN '1' ELSE '' END AS image_data,
+                       sort_order, created_at, updated_at
+                FROM records
+                WHERE id NOT IN ({placeholders})
+                ORDER BY sort_order ASC, id DESC
+                """,
+                tuple(first_ids),
+            ).fetchall()
+        else:
+            rest_rows = conn.execute(
+                """
+                SELECT id, name, brand, platform, order_no, payment_type, has_shipping,
+                       price, deposit_amount, balance_amount, shipping_amount,
+                       payment_details, quantity, status, purchase_date, note,
+                       CASE WHEN image_data != '' THEN '1' ELSE '' END AS image_data,
+                       sort_order, created_at, updated_at
+                FROM records
+                ORDER BY sort_order ASC, id DESC
+                """
+            ).fetchall()
+    return [row_to_summary(row, include_image=True) for row in first_rows] + [
+        row_to_summary(row) for row in rest_rows
+    ]
 
 
 @app.post("/api/records")
