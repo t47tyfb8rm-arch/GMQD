@@ -59,12 +59,47 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
+def payment_items_total(payment_details: str) -> float:
+    try:
+        items = json.loads(payment_details or "[]")
+    except json.JSONDecodeError:
+        return 0
+    if not isinstance(items, list):
+        return 0
+    total = 0.0
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        try:
+            amount = float(item.get("amount") or 0)
+        except (TypeError, ValueError):
+            amount = 0
+        if amount > 0:
+            total += amount
+    return total
+
+
+def payment_items_list_total(items: list[dict[str, Any]]) -> float:
+    total = 0.0
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        try:
+            amount = float(item.get("amount") or 0)
+        except (TypeError, ValueError):
+            amount = 0
+        if amount > 0:
+            total += amount
+    return total
+
+
 def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
     deposit_amount = row["deposit_amount"] or 0
     balance_amount = row["balance_amount"] or 0
     shipping_amount = row["shipping_amount"] or 0
     price = row["price"] or 0
-    total_amount = price or (deposit_amount + balance_amount + shipping_amount)
+    item_total = payment_items_total(row["payment_details"] or "[]")
+    total_amount = item_total or price or (deposit_amount + balance_amount + shipping_amount)
     return {
         "id": row["id"],
         "name": row["name"],
@@ -254,7 +289,8 @@ def list_record_summaries() -> list[dict[str, Any]]:
 @app.post("/api/records")
 def create_record(record: RecordIn) -> dict[str, Any]:
     ts = now_text()
-    total_amount = record.price or (record.depositAmount + record.balanceAmount + record.shippingAmount)
+    payment_total = payment_items_list_total(record.paymentItems)
+    total_amount = payment_total or record.price or (record.depositAmount + record.balanceAmount + record.shippingAmount)
     with connect() as conn:
         conn.execute("UPDATE records SET sort_order = sort_order + 1")
         cur = conn.execute(
@@ -344,7 +380,8 @@ def get_record(record_id: int) -> dict[str, Any]:
 
 @app.put("/api/records/{record_id}")
 def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
-    total_amount = record.price or (record.depositAmount + record.balanceAmount + record.shippingAmount)
+    payment_total = payment_items_list_total(record.paymentItems)
+    total_amount = payment_total or record.price or (record.depositAmount + record.balanceAmount + record.shippingAmount)
     with connect() as conn:
         exists = conn.execute("SELECT id FROM records WHERE id = ?", (record_id,)).fetchone()
         if not exists:
