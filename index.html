@@ -1793,7 +1793,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-save-load-feedback';
+    const APP_VERSION = '20260728-v1-fast-summary-load';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1801,6 +1801,7 @@
     let sortDraftRecords = [];
     let sortDragState = null;
     let isSavingRecord = false;
+    let imageHydrationToken = 0;
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
@@ -1824,12 +1825,31 @@
             grid.innerHTML = `<div class="empty-state"><div class="empty-icon"></div><div class="empty-text">衣柜整理中...</div><div class="empty-subtext">正在把小衣服摆进柜子</div></div>`;
         }
         try {
-            records = await apiRequest('/api/records');
+            records = await apiRequest('/api/records/summary');
             renderGrid();
+            hydrateRecordImages();
         } catch (error) {
             document.getElementById('productGrid').innerHTML =
                 `<div class="empty-state"><div class="empty-icon">!</div><div class="empty-text">数据库连接失败，请确认后端服务已启动</div></div>`;
             console.error(error);
+        }
+    }
+
+    async function hydrateRecordImages() {
+        const token = ++imageHydrationToken;
+        const targets = records.filter(r => r.hasImage && !r.imageData).slice();
+        for (const target of targets) {
+            if (token !== imageHydrationToken) return;
+            try {
+                const fullRecord = await apiRequest(`/api/records/${target.id}`);
+                const index = records.findIndex(r => String(r.id) === String(fullRecord.id));
+                if (index >= 0) {
+                    records.splice(index, 1, fullRecord);
+                    renderGrid();
+                }
+            } catch (error) {
+                console.warn('图片加载失败', target.id, error);
+            }
         }
     }
 
@@ -2545,6 +2565,9 @@
     function openDetail(id) {
         const r = records.find(x => x.id == id);
         if (!r) return;
+        if (r.hasImage && !r.imageData) {
+            loadFullRecordForDetail(id);
+        }
         currentDetailId = r.id;
         document.getElementById('detailTitle').textContent = r.name;
         const detailImage = document.querySelector('.detail-img-area');
@@ -2565,6 +2588,18 @@
             <li><span class="icon">记</span><span class="label">备注</span><span class="value">${note}</span></li>
         `;
         document.getElementById('detailModal').classList.add('active');
+    }
+
+    async function loadFullRecordForDetail(id) {
+        try {
+            const fullRecord = await apiRequest(`/api/records/${id}`);
+            const index = records.findIndex(r => String(r.id) === String(fullRecord.id));
+            if (index >= 0) records.splice(index, 1, fullRecord);
+            if (String(currentDetailId) === String(id)) openDetail(id);
+            else renderGrid();
+        } catch (error) {
+            console.warn('详情图片加载失败', id, error);
+        }
     }
 
     function openImageViewer(src, name = '商品图片') {
