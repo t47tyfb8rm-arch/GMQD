@@ -1763,6 +1763,237 @@
                 grid-template-columns: repeat(4, 1fr);
             }
         }
+
+        /* V2 boutique closet visual reset */
+        body {
+            background:
+                radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.95), transparent 30%),
+                radial-gradient(circle at 88% 10%, rgba(196, 217, 202, 0.32), transparent 24%),
+                linear-gradient(180deg, #fbf6ee 0%, #fff9fb 46%, #f7faf4 100%);
+        }
+        body::before {
+            background:
+                linear-gradient(90deg, transparent 0 5%, rgba(176, 137, 88, 0.10) 5% 5.4%, transparent 5.4% 33%, rgba(176, 137, 88, 0.08) 33% 33.35%, transparent 33.35% 66%, rgba(176, 137, 88, 0.08) 66% 66.35%, transparent 66.35% 95%, rgba(176, 137, 88, 0.10) 95% 95.4%, transparent 95.4%),
+                repeating-linear-gradient(180deg, transparent 0 150px, rgba(176, 137, 88, 0.09) 150px 152px, rgba(255, 255, 255, 0.70) 152px 155px, transparent 155px 224px);
+        }
+        body.dark {
+            background:
+                radial-gradient(circle at 18% 0%, rgba(255, 226, 185, 0.10), transparent 30%),
+                radial-gradient(circle at 88% 10%, rgba(90, 128, 112, 0.18), transparent 24%),
+                linear-gradient(180deg, #151313 0%, #1a1518 48%, #101313 100%);
+        }
+        .status-bar,
+        .nav-bar {
+            background: rgba(255, 252, 248, 0.68);
+            backdrop-filter: blur(18px);
+            border-bottom-color: rgba(194, 158, 105, 0.12);
+        }
+        body.dark .status-bar,
+        body.dark .nav-bar {
+            background: rgba(18, 17, 18, 0.72);
+            border-bottom-color: rgba(229, 192, 132, 0.10);
+        }
+        .header-info {
+            margin: 10px 14px 0;
+            padding: 22px 22px 18px;
+            border: 1px solid rgba(205, 167, 113, 0.20);
+            border-radius: 28px 28px 20px 20px;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 246, 249, 0.70) 52%, rgba(242, 249, 239, 0.76)),
+                linear-gradient(90deg, rgba(211, 170, 110, 0.14), transparent 42%, rgba(125, 162, 145, 0.12));
+            box-shadow:
+                0 18px 44px rgba(154, 117, 79, 0.10),
+                inset 0 1px 0 rgba(255, 255, 255, 0.80);
+        }
+        body.dark .header-info {
+            background:
+                linear-gradient(135deg, rgba(35, 30, 31, 0.88), rgba(28, 21, 26, 0.74) 52%, rgba(20, 31, 28, 0.72)),
+                linear-gradient(90deg, rgba(229, 188, 124, 0.10), transparent 42%, rgba(116, 156, 137, 0.09));
+            border-color: rgba(229, 188, 124, 0.14);
+            box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        .header-info::before {
+            inset: 12px 18px auto;
+            height: 42px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
+            opacity: 0.55;
+        }
+        .header-info::after {
+            left: 22px;
+            right: 22px;
+            background: linear-gradient(90deg, transparent, rgba(196, 155, 98, 0.72), rgba(255, 122, 172, 0.30), transparent);
+        }
+        .header-info .title {
+            font-size: 30px;
+            letter-spacing: 0;
+            color: #211917;
+        }
+        .header-info .subtitle {
+            font-size: 15px;
+            color: #7b6d63;
+            font-weight: 600;
+        }
+        body.dark .header-info .subtitle {
+            color: #cbbdb4;
+        }
+        .header-sort-btn,
+        .nav-bar .right .theme-btn {
+            border: 1px solid rgba(205, 167, 113, 0.20);
+            background: rgba(255, 255, 255, 0.72);
+            box-shadow: 0 10px 22px rgba(154, 117, 79, 0.09);
+        }
+        .tab-bar {
+            margin: 10px 14px 0;
+            padding: 8px;
+            gap: 8px;
+            border: 1px solid rgba(205, 167, 113, 0.14);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.60);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 12px 28px rgba(154, 117, 79, 0.08);
+        }
+        body.dark .tab-bar {
+            background: rgba(25, 22, 24, 0.66);
+            border-color: rgba(229, 188, 124, 0.11);
+        }
+        .tab-bar .tab-item {
+            height: 36px;
+            color: #5e5148;
+            border-radius: 999px;
+        }
+        .tab-bar .tab-item.active {
+            background: linear-gradient(135deg, #2c2924, #947349 54%, #d78aa7);
+            color: #fff;
+            box-shadow: 0 10px 22px rgba(148, 115, 73, 0.22);
+        }
+        .product-grid {
+            margin: 12px 14px 0;
+            padding: 30px 24px 116px;
+            column-gap: 18px;
+            row-gap: 30px;
+            border: 1px solid rgba(205, 167, 113, 0.18);
+            border-radius: 30px;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.82) 0 12px, transparent 12px calc(100% - 12px), rgba(255,255,255,0.82) calc(100% - 12px)),
+                repeating-linear-gradient(180deg, transparent 0 138px, rgba(184, 143, 90, 0.22) 138px 141px, rgba(255, 255, 255, 0.78) 141px 145px, transparent 145px 198px),
+                linear-gradient(180deg, rgba(255, 254, 250, 0.93), rgba(247, 250, 244, 0.86));
+            box-shadow:
+                0 22px 46px rgba(141, 105, 71, 0.12),
+                inset 0 18px 36px rgba(255, 255, 255, 0.56),
+                inset 0 -24px 44px rgba(216, 182, 127, 0.10);
+        }
+        .product-grid::before {
+            inset: 12px 14px 102px;
+            border-radius: 24px;
+            background:
+                repeating-linear-gradient(90deg, rgba(184, 143, 90, 0.15) 0 1px, transparent 1px calc(33.333% - 1px), rgba(184, 143, 90, 0.13) calc(33.333% - 1px) 33.333%),
+                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.62), transparent 38%);
+        }
+        .product-grid::after {
+            background: linear-gradient(105deg, transparent 0 35%, rgba(255,255,255,0.52) 45%, rgba(226, 195, 139, 0.18) 50%, transparent 60%);
+            animation-duration: 10s;
+        }
+        body.dark .product-grid {
+            background:
+                linear-gradient(90deg, rgba(31,27,28,0.78) 0 12px, transparent 12px calc(100% - 12px), rgba(31,27,28,0.78) calc(100% - 12px)),
+                repeating-linear-gradient(180deg, transparent 0 138px, rgba(229, 188, 124, 0.13) 138px 141px, rgba(255,255,255,0.04) 141px 145px, transparent 145px 198px),
+                linear-gradient(180deg, rgba(26, 24, 24, 0.94), rgba(18, 24, 22, 0.88));
+            border-color: rgba(229, 188, 124, 0.12);
+        }
+        .product-card {
+            animation: cabinetItemIn 0.58s cubic-bezier(.18,.76,.2,1) both;
+        }
+        .product-card:hover {
+            transform: translateY(-5px) scale(1.015);
+            filter: saturate(1.04);
+        }
+        .product-card::after {
+            left: 12%;
+            right: 12%;
+            top: calc(100% - 28px);
+            background: rgba(101, 75, 52, 0.16);
+        }
+        .product-card .img-wrap {
+            border-radius: 22px;
+            border-color: rgba(196, 155, 98, 0.23);
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.98), rgba(250,246,240,0.94));
+            box-shadow:
+                0 14px 28px rgba(116, 83, 54, 0.13),
+                0 3px 10px rgba(194, 93, 134, 0.07),
+                inset 0 1px 0 rgba(255,255,255,0.92);
+        }
+        .product-card .img-wrap img {
+            transition: transform 0.42s ease, filter 0.42s ease;
+        }
+        .product-card:hover .img-wrap img {
+            transform: scale(1.045);
+        }
+        .product-card .img-wrap .tag {
+            top: 6px;
+            min-width: 58px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(37, 33, 29, 0.72);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 16px rgba(52, 40, 29, 0.18);
+        }
+        .product-card .quick-edit {
+            right: 6px;
+            bottom: 6px;
+            background: rgba(255, 255, 255, 0.86);
+            color: #9c6d7b;
+            box-shadow: 0 8px 18px rgba(60, 45, 34, 0.16);
+        }
+        .product-card .card-body .name {
+            font-size: 15.5px;
+            color: #251b18;
+            font-weight: 700;
+        }
+        .product-card .card-body .price {
+            margin-top: 5px;
+            color: #c25d86;
+            font-size: 17.5px;
+            text-shadow: none;
+        }
+        body.dark .product-card .card-body .price {
+            color: #f0a3bf;
+        }
+        .add-btn {
+            background: linear-gradient(145deg, #1f1b18, #b18652 52%, #e48daa);
+            box-shadow: 0 18px 36px rgba(119, 82, 49, 0.28);
+        }
+        body.dark .add-btn {
+            background: linear-gradient(145deg, #27211d, #9d7646 52%, #b76484);
+        }
+        @media (max-width: 430px) {
+            .header-info {
+                margin: 8px 10px 0;
+                padding: 18px 18px 14px;
+                border-radius: 24px 24px 18px 18px;
+            }
+            .header-info .title {
+                font-size: 28px;
+            }
+            .tab-bar {
+                margin: 8px 10px 0;
+                padding: 7px;
+            }
+            .product-grid {
+                margin: 10px 10px 0;
+                padding: 24px 20px 102px;
+                column-gap: 16px;
+                row-gap: 26px;
+                border-radius: 26px;
+            }
+            .product-card .card-body .name {
+                font-size: 14.5px;
+            }
+            .product-card .card-body .price {
+                font-size: 16.5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1979,7 +2210,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v2-cabinet-polish';
+    const APP_VERSION = '20260728-v2-boutique-closet';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
