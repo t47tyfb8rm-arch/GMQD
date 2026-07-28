@@ -1793,7 +1793,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-fast-summary-load';
+    const APP_VERSION = '20260728-v1-fast-delete';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -2629,13 +2629,26 @@
 
     async function deleteFromDetail() {
         if (currentDetailId && confirm('确定要删除这条记录吗？')) {
+            const deleteId = currentDetailId;
+            const deleteBtn = document.querySelector('.detail-actions .btn-delete');
+            const originalText = deleteBtn ? deleteBtn.textContent : '';
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = '删除中...';
+            }
             try {
-                await apiRequest(`/api/records/${currentDetailId}`, { method: 'DELETE' });
+                await apiRequest(`/api/records/${deleteId}`, { method: 'DELETE' });
+                records = records.filter(r => String(r.id) !== String(deleteId));
                 closeDetailModal();
-                await loadRecordsFromApi();
+                renderGrid();
             } catch (error) {
                 alert('从数据库删除失败，请检查后端服务。');
                 console.error(error);
+            } finally {
+                if (deleteBtn) {
+                    deleteBtn.disabled = false;
+                    deleteBtn.textContent = originalText || '删除';
+                }
             }
         }
     }
