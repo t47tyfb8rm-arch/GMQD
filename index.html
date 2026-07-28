@@ -266,6 +266,8 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            opacity: 1;
+            transition: opacity 0.18s ease;
         }
         body.dark .product-card .img-wrap {
             background: #2a2429;
@@ -277,6 +279,30 @@
             transform: translate(-50%, -50%);
             font-size: 30px;
             color: #ddd;
+        }
+        .product-card .img-wrap .placeholder-icon.image-loading {
+            width: 100%;
+            height: 100%;
+            inset: 0;
+            transform: none;
+            display: grid;
+            place-items: center;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0)),
+                #fff1f6;
+            background-size: 180% 100%, 100% 100%;
+            animation: imageShimmer 1.1s ease-in-out infinite;
+            color: #f49ac0;
+        }
+        body.dark .product-card .img-wrap .placeholder-icon.image-loading {
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.08), rgba(255,255,255,0)),
+                #2a2429;
+            color: #d77aa4;
+        }
+        @keyframes imageShimmer {
+            from { background-position: 120% 0, 0 0; }
+            to { background-position: -120% 0, 0 0; }
         }
         .product-card .img-wrap .tag {
             position: absolute;
@@ -1793,7 +1819,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-delete-post-fix';
+    const APP_VERSION = '20260728-v1-lazy-image-load';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1802,6 +1828,11 @@
     let sortDragState = null;
     let isSavingRecord = false;
     let imageHydrationToken = 0;
+    let imageObserver = null;
+    let activeImageLoads = 0;
+    const pendingImageIds = new Set();
+    const loadingImageIds = new Set();
+    const MAX_ACTIVE_IMAGE_LOADS = 2;
     let currentFilter = '';
     let currentDetailId = null;
     const THEME_KEY = 'shopping_list_theme';
@@ -1843,21 +1874,76 @@
     }
 
     async function hydrateRecordImages() {
-        const token = ++imageHydrationToken;
-        const targets = records.filter(r => r.hasImage && !r.imageData).slice();
-        for (const target of targets) {
-            if (token !== imageHydrationToken) return;
-            try {
-                const fullRecord = await apiRequest(`/api/records/${target.id}`);
-                const index = records.findIndex(r => String(r.id) === String(fullRecord.id));
-                if (index >= 0) {
-                    records.splice(index, 1, fullRecord);
-                    renderGrid();
-                }
-            } catch (error) {
-                console.warn('图片加载失败', target.id, error);
-            }
+        imageHydrationToken++;
+        pendingImageIds.clear();
+        loadingImageIds.clear();
+        activeImageLoads = 0;
+        observeVisibleCardImages();
+    }
+
+    function observeVisibleCardImages() {
+        const targets = Array.from(document.querySelectorAll('[data-image-record-id]'))
+            .filter(el => {
+                const id = el.dataset.imageRecordId;
+                const record = records.find(r => String(r.id) === String(id));
+                return record && record.hasImage && !record.imageData;
+            });
+        if (imageObserver) imageObserver.disconnect();
+        if (!targets.length) return;
+        if (!('IntersectionObserver' in window)) {
+            targets.slice(0, 12).forEach(el => enqueueImageHydration(el.dataset.imageRecordId));
+            return;
         }
+        imageObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                imageObserver.unobserve(entry.target);
+                enqueueImageHydration(entry.target.dataset.imageRecordId);
+            });
+        }, { rootMargin: '280px 0px' });
+        targets.forEach(el => imageObserver.observe(el));
+    }
+
+    function enqueueImageHydration(id) {
+        if (!id || pendingImageIds.has(String(id)) || loadingImageIds.has(String(id))) return;
+        pendingImageIds.add(String(id));
+        pumpImageHydrationQueue();
+    }
+
+    function pumpImageHydrationQueue() {
+        while (activeImageLoads < MAX_ACTIVE_IMAGE_LOADS && pendingImageIds.size) {
+            const id = pendingImageIds.values().next().value;
+            pendingImageIds.delete(id);
+            loadCardImage(id);
+        }
+    }
+
+    async function loadCardImage(id) {
+        const token = imageHydrationToken;
+        activeImageLoads++;
+        loadingImageIds.add(String(id));
+        try {
+            const fullRecord = await apiRequest(`/api/records/${id}`);
+            if (token !== imageHydrationToken) return;
+            const index = records.findIndex(r => String(r.id) === String(fullRecord.id));
+            if (index >= 0) records.splice(index, 1, fullRecord);
+            updateCardImage(fullRecord);
+        } catch (error) {
+            console.warn('图片加载失败', id, error);
+        } finally {
+            activeImageLoads = Math.max(0, activeImageLoads - 1);
+            loadingImageIds.delete(String(id));
+            pumpImageHydrationQueue();
+        }
+    }
+
+    function updateCardImage(record) {
+        if (!record || !record.imageData) return;
+        document.querySelectorAll(`[data-image-record-id="${record.id}"]`).forEach(box => {
+            const slot = box.querySelector('.card-image-slot');
+            if (!slot) return;
+            slot.innerHTML = `<img src="${record.imageData}" alt="${escapeHtml(record.name)}" loading="lazy" decoding="async">`;
+        });
     }
 
     function applyTheme(theme) {
@@ -1905,9 +1991,13 @@
         }
 
         grid.innerHTML = filtered.map((r) => `
-            <div class="product-card" onclick="openDetail('${r.id}')">
-                    <div class="img-wrap">
-                        ${r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '<div class="placeholder-icon">🛍</div>'}
+            <div class="product-card" data-id="${r.id}" onclick="openDetail('${r.id}')">
+                    <div class="img-wrap" data-image-record-id="${r.id}">
+                        <div class="card-image-slot">
+                            ${r.imageData
+                                ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}" loading="lazy" decoding="async">`
+                                : `<div class="placeholder-icon ${r.hasImage ? 'image-loading' : ''}">🛍</div>`}
+                        </div>
                         ${r.status ? `<div class="tag">${escapeHtml(r.status)}</div>` : ''}
                         <button class="quick-edit" type="button" onclick="quickEdit(event, '${r.id}')" title="编辑">✎</button>
                     </div>
@@ -1917,6 +2007,7 @@
                     </div>
                 </div>
             `).join('');
+        observeVisibleCardImages();
 
     }
 
