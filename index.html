@@ -13,13 +13,18 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-            background-color: #fff7fa;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 244, 249, 0.94) 42%, #fff7fa),
+                repeating-linear-gradient(90deg, rgba(255, 211, 226, 0.18) 0 1px, transparent 1px 72px);
             color: #333;
             min-height: 100vh;
             transition: background 0.2s, color 0.2s;
+            overflow-x: hidden;
         }
         body.dark {
-            background-color: #161316;
+            background:
+                linear-gradient(180deg, #171116, #1e171d 48%, #161316),
+                repeating-linear-gradient(90deg, rgba(255, 139, 200, 0.06) 0 1px, transparent 1px 72px);
             color: #f3edf2;
         }
 
@@ -126,11 +131,29 @@
 
         /* ===== 头部信息 ===== */
         .header-info {
-            padding: 18px 20px 10px;
-            background: #fff7fa;
+            position: relative;
+            overflow: hidden;
+            padding: 20px 20px 12px;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.94), rgba(255,238,247,0.86)),
+                linear-gradient(90deg, rgba(255, 196, 219, 0.28), transparent 58%);
+            border-bottom: 1px solid rgba(255, 185, 214, 0.36);
         }
         body.dark .header-info {
-            background: #161316;
+            background:
+                linear-gradient(135deg, rgba(34, 27, 33, 0.96), rgba(25, 18, 24, 0.96)),
+                linear-gradient(90deg, rgba(255, 139, 200, 0.12), transparent 58%);
+            border-bottom-color: rgba(255, 139, 200, 0.12);
+        }
+        .header-info::after {
+            content: "";
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            bottom: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 105, 180, 0.62), transparent);
+            animation: wardrobeLight 4.8s ease-in-out infinite;
         }
         .header-topline {
             display: flex;
@@ -144,9 +167,10 @@
         .header-info .title {
             font-size: 26px;
             font-weight: 800;
-            color: #000;
+            color: #1f171d;
             margin-bottom: 6px;
             line-height: 1.15;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.58);
         }
         body.dark .header-info .title {
             color: #fff;
@@ -167,12 +191,13 @@
             height: 34px;
             border: none;
             border-radius: 999px;
-            background: #fff;
+            background: rgba(255,255,255,0.88);
             color: #ff4fa8;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 14px rgba(255, 105, 180, 0.16);
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.18), inset 0 1px 0 rgba(255,255,255,0.82);
+            backdrop-filter: blur(12px);
         }
         body.dark .header-sort-btn {
             background: #2a2028;
@@ -183,11 +208,12 @@
         .tab-bar {
             display: flex;
             gap: 8px;
-            padding: 4px 20px 14px;
-            background: #fff7fa;
-            border-bottom: 1px solid #f0e0e0;
+            padding: 8px 20px 16px;
+            background: rgba(255, 247, 250, 0.88);
+            border-bottom: 1px solid rgba(240, 224, 224, 0.72);
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
+            backdrop-filter: blur(12px);
         }
         body.dark .tab-bar {
             background: #161316;
@@ -216,9 +242,9 @@
             color: #cdbfc8;
         }
         .tab-bar .tab-item.active {
-            background: #ff69b4;
+            background: linear-gradient(135deg, #ff69b4, #ff8fbd);
             color: #fff;
-            box-shadow: 0 6px 14px rgba(255, 105, 180, 0.22);
+            box-shadow: 0 8px 18px rgba(255, 105, 180, 0.24);
         }
         .tab-bar .tab-item:hover:not(.active) {
             background: #ffe0ec;
@@ -229,37 +255,104 @@
 
         /* ===== 商品网格 ===== */
         .product-grid {
+            position: relative;
+            isolation: isolate;
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             column-gap: 18px;
-            row-gap: 26px;
-            padding: 28px 34px 96px;
-            background: #fff7fa;
-            border-radius: 0;
+            row-gap: 34px;
+            padding: 34px 34px 112px;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.92) 0 10px, transparent 10px calc(100% - 10px), rgba(255,255,255,0.92) calc(100% - 10px)),
+                linear-gradient(180deg, rgba(255, 251, 253, 0.96), rgba(255, 241, 248, 0.9));
+            border-radius: 0 0 26px 26px;
+            box-shadow: inset 0 14px 34px rgba(255, 209, 226, 0.34);
+        }
+        .product-grid::before {
+            content: "";
+            position: absolute;
+            inset: 0 18px 88px;
+            z-index: -1;
+            border-radius: 24px;
+            background:
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0 132px,
+                    rgba(255, 205, 222, 0.72) 132px 136px,
+                    rgba(255, 255, 255, 0.72) 136px 140px,
+                    transparent 140px 174px
+                ),
+                repeating-linear-gradient(
+                    to right,
+                    rgba(255, 213, 228, 0.42) 0 2px,
+                    transparent 2px calc(33.333% - 1px),
+                    rgba(255, 213, 228, 0.42) calc(33.333% - 1px) 33.333%
+                );
+            pointer-events: none;
+        }
+        .product-grid::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(105deg, transparent 0 34%, rgba(255,255,255,0.42) 45%, transparent 56%);
+            transform: translateX(-70%);
+            animation: cabinetSweep 7s ease-in-out infinite;
+            pointer-events: none;
         }
         .product-card {
+            position: relative;
             background: transparent;
             border-radius: 0;
             overflow: visible;
             box-shadow: none;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            animation: cabinetItemIn 0.52s cubic-bezier(.2,.72,.2,1) both;
+            transition: transform 0.22s ease, filter 0.22s ease;
         }
         body.dark .product-card {
             background: transparent;
             box-shadow: none;
         }
         .product-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
             box-shadow: none;
+        }
+        .product-card::after {
+            content: "";
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            top: calc(100% - 33px);
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(198, 112, 148, 0.13);
+            filter: blur(5px);
+            z-index: -1;
         }
         .product-card .img-wrap {
             position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            background: #fff;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,246,250,0.9));
             overflow: hidden;
-            border-radius: 18px;
+            border: 1px solid rgba(255, 218, 232, 0.78);
+            border-radius: 20px;
+            box-shadow:
+                0 12px 24px rgba(198, 112, 148, 0.13),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            transform: translateZ(0);
+        }
+        .product-card .img-wrap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.34), transparent 38%),
+                linear-gradient(180deg, transparent 72%, rgba(0,0,0,0.04));
+            pointer-events: none;
         }
         .product-card .img-wrap img {
             width: 100%;
@@ -268,7 +361,9 @@
             display: block;
         }
         body.dark .product-card .img-wrap {
-            background: #2a2429;
+            background: linear-gradient(145deg, #2a2429, #1c161b);
+            border-color: rgba(255, 139, 200, 0.16);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.05);
         }
         .product-card .img-wrap .placeholder-icon {
             position: absolute;
@@ -286,12 +381,13 @@
             min-width: 62px;
             padding: 4px 12px;
             border-radius: 0 0 8px 8px;
-            background: #ff86ad;
+            background: linear-gradient(135deg, #ff75a6, #ff9abc);
             color: #fff;
             text-align: center;
             font-size: 12px;
             line-height: 1.2;
             white-space: nowrap;
+            box-shadow: 0 6px 12px rgba(255, 105, 180, 0.22);
         }
         .product-card .quick-edit {
             position: absolute;
@@ -318,7 +414,7 @@
         }
         .product-card .card-body .name {
             font-size: 15px;
-            color: #000;
+            color: #24191f;
             font-weight: 600;
             line-height: 1.3;
             display: -webkit-box;
@@ -336,6 +432,7 @@
             color: #ff69b4;
             font-weight: 700;
             margin-top: 7px;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.78);
         }
         .product-card .card-body .payment-row {
             display: none;
@@ -381,7 +478,26 @@
             color: #77d596;
         }
         body.dark .product-grid {
-            background: #161316;
+            background:
+                linear-gradient(90deg, rgba(38,31,37,0.96) 0 10px, transparent 10px calc(100% - 10px), rgba(38,31,37,0.96) calc(100% - 10px)),
+                linear-gradient(180deg, #181317, #161316);
+            box-shadow: inset 0 14px 34px rgba(0, 0, 0, 0.28);
+        }
+        body.dark .product-grid::before {
+            background:
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0 132px,
+                    rgba(255, 139, 200, 0.14) 132px 136px,
+                    rgba(255, 255, 255, 0.06) 136px 140px,
+                    transparent 140px 174px
+                ),
+                repeating-linear-gradient(
+                    to right,
+                    rgba(255, 139, 200, 0.10) 0 2px,
+                    transparent 2px calc(33.333% - 1px),
+                    rgba(255, 139, 200, 0.10) calc(33.333% - 1px) 33.333%
+                );
         }
         .product-card .card-body .meta {
             display: flex;
@@ -460,6 +576,27 @@
         @keyframes modalPop {
             from { opacity: 0; transform: translateY(12px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes wardrobeLight {
+            0%, 100% { opacity: 0.34; transform: scaleX(0.72); }
+            50% { opacity: 1; transform: scaleX(1); }
+        }
+        @keyframes cabinetSweep {
+            0%, 58%, 100% { transform: translateX(-72%); opacity: 0; }
+            70% { opacity: 0.76; }
+            86% { transform: translateX(72%); opacity: 0; }
+        }
+        @keyframes cabinetItemIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px) scale(0.96);
+                filter: blur(3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
         }
         .modal-content .modal-header {
             display: flex;
@@ -1310,8 +1447,14 @@
         .empty-state {
             text-align: center;
             grid-column: 1 / -1;
-            padding: 58px 20px;
+            padding: 76px 20px 92px;
             color: #b89aa8;
+            border: 1px solid rgba(255, 213, 228, 0.72);
+            border-radius: 24px;
+            background:
+                repeating-linear-gradient(to bottom, transparent 0 76px, rgba(255, 205, 222, 0.55) 76px 80px, transparent 80px 116px),
+                rgba(255,255,255,0.46);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
         }
         .empty-state .empty-icon {
             position: relative;
@@ -1358,6 +1501,19 @@
         }
         body.dark .empty-state .empty-text {
             color: #e8c9d8;
+        }
+        body.dark .empty-state {
+            border-color: rgba(255, 139, 200, 0.14);
+            background:
+                repeating-linear-gradient(to bottom, transparent 0 76px, rgba(255, 139, 200, 0.10) 76px 80px, transparent 80px 116px),
+                rgba(255,255,255,0.03);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .product-card,
+            .product-grid::after,
+            .header-info::after {
+                animation: none !important;
+            }
         }
 
         /* ===== 响应式 ===== */
@@ -1789,7 +1945,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260727-detail-channel-quantity-swap';
+    const APP_VERSION = '20260728-v2-cabinet-stage';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1868,8 +2024,8 @@
             return;
         }
 
-        grid.innerHTML = filtered.map((r) => `
-            <div class="product-card" onclick="openDetail('${r.id}')">
+        grid.innerHTML = filtered.map((r, index) => `
+            <div class="product-card" style="animation-delay:${Math.min(index * 42, 360)}ms" onclick="openDetail('${r.id}')">
                     <div class="img-wrap">
                         ${r.imageData ? `<img src="${r.imageData}" alt="${escapeHtml(r.name)}">` : '<div class="placeholder-icon">🛍</div>'}
                         ${r.status ? `<div class="tag">${escapeHtml(r.status)}</div>` : ''}
