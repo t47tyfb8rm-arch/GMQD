@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
+import base64
 import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 
 
@@ -38,6 +39,10 @@ class RecordIn(BaseModel):
 
 class SortIn(BaseModel):
     ids: list[int]
+
+
+class DeleteIn(BaseModel):
+    id: int
 
 
 app = FastAPI(title="GMQD 购物清单")
@@ -83,6 +88,29 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
         "createdAt": row["created_at"],
         "updatedAt": row["updated_at"],
     }
+
+
+def row_to_summary(row: sqlite3.Row, include_image: bool = False) -> dict[str, Any]:
+    record = row_to_record(row)
+    record["hasImage"] = bool(row["image_data"] or "")
+    if not include_image:
+        record["imageData"] = ""
+    record["imageUrl"] = f"/api/records/{row['id']}/image" if record["hasImage"] else ""
+    return record
+
+
+def parse_image_data(image_data: str) -> tuple[bytes, str]:
+    if not image_data:
+        raise HTTPException(status_code=404, detail="Image not found")
+    media_type = "image/jpeg"
+    payload = image_data
+    if image_data.startswith("data:") and "," in image_data:
+        header, payload = image_data.split(",", 1)
+        media_type = header.split(";", 1)[0].replace("data:", "") or media_type
+    try:
+        return base64.b64decode(payload, validate=False), media_type
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="Image decode failed") from exc
 
 
 def execute_write(sql: str, params: tuple[Any, ...]) -> int:
@@ -184,6 +212,45 @@ def list_records() -> list[dict[str, Any]]:
     return [row_to_record(row) for row in rows]
 
 
+@app.get("/api/records/summary")
+def list_record_summaries() -> list[dict[str, Any]]:
+    with connect() as conn:
+        first_rows = conn.execute(
+            "SELECT * FROM records ORDER BY sort_order ASC, id DESC LIMIT 12"
+        ).fetchall()
+        first_ids = [row["id"] for row in first_rows]
+        if first_ids:
+            placeholders = ",".join("?" for _ in first_ids)
+            rest_rows = conn.execute(
+                f"""
+                SELECT id, name, brand, platform, order_no, payment_type, has_shipping,
+                       price, deposit_amount, balance_amount, shipping_amount,
+                       payment_details, quantity, status, purchase_date, note,
+                       CASE WHEN image_data != '' THEN '1' ELSE '' END AS image_data,
+                       sort_order, created_at, updated_at
+                FROM records
+                WHERE id NOT IN ({placeholders})
+                ORDER BY sort_order ASC, id DESC
+                """,
+                tuple(first_ids),
+            ).fetchall()
+        else:
+            rest_rows = conn.execute(
+                """
+                SELECT id, name, brand, platform, order_no, payment_type, has_shipping,
+                       price, deposit_amount, balance_amount, shipping_amount,
+                       payment_details, quantity, status, purchase_date, note,
+                       CASE WHEN image_data != '' THEN '1' ELSE '' END AS image_data,
+                       sort_order, created_at, updated_at
+                FROM records
+                ORDER BY sort_order ASC, id DESC
+                """
+            ).fetchall()
+    return [row_to_summary(row, include_image=True) for row in first_rows] + [
+        row_to_summary(row) for row in rest_rows
+    ]
+
+
 @app.post("/api/records")
 def create_record(record: RecordIn) -> dict[str, Any]:
     ts = now_text()
@@ -249,6 +316,23 @@ def reorder_records(sort: SortIn) -> dict[str, Any]:
     return apply_sort_order(sort)
 
 
+@app.get("/api/records/{record_id}/image")
+def get_record_image(record_id: int) -> Response:
+    with connect() as conn:
+        row = conn.execute("SELECT image_data, updated_at FROM records WHERE id = ?", (record_id,)).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Record not found")
+    content, media_type = parse_image_data(row["image_data"] or "")
+    return Response(
+        content=content,
+        media_type=media_type,
+        headers={
+            "Cache-Control": "private, max-age=86400",
+            "ETag": f'W/"record-{record_id}-{row["updated_at"]}"',
+        },
+    )
+
+
 @app.get("/api/records/{record_id}")
 def get_record(record_id: int) -> dict[str, Any]:
     with connect() as conn:
@@ -298,14 +382,23 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
     return get_record(record_id)
 
 
-@app.delete("/api/records/{record_id}")
-def delete_record(record_id: int) -> dict[str, Any]:
+def delete_record_by_id(record_id: int) -> dict[str, Any]:
     with connect() as conn:
         cur = conn.execute("DELETE FROM records WHERE id = ?", (record_id,))
         conn.commit()
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Record not found")
     return {"ok": True}
+
+
+@app.post("/api/records/delete")
+def delete_record_post(payload: DeleteIn) -> dict[str, Any]:
+    return delete_record_by_id(payload.id)
+
+
+@app.delete("/api/records/{record_id}")
+def delete_record(record_id: int) -> dict[str, Any]:
+    return delete_record_by_id(record_id)
 
 
 @app.put("/api/records/sort")
