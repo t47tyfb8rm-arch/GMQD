@@ -1816,6 +1816,168 @@
                 min-height: 44px;
             }
         }
+
+        /* V1 single-line form fields and detail polish */
+        .form-modal-content .form-row.single-row {
+            grid-template-columns: 1fr;
+        }
+        .form-modal-content .single-row > .form-group {
+            min-height: 54px;
+        }
+        .form-modal-content .single-row > .form-group input,
+        .form-modal-content .single-row > .form-group select {
+            text-align: left;
+        }
+        .form-modal-content .name-row > .form-group input {
+            font-size: 16px;
+            font-weight: 800;
+        }
+        .form-modal-content .platform-row > .form-group {
+            background: linear-gradient(180deg, #fff, #fffafd);
+        }
+        body.dark .form-modal-content .platform-row > .form-group {
+            background: #171216;
+        }
+        .modal-content.detail-modal {
+            width: min(94vw, 560px);
+            max-width: 560px;
+            max-height: calc(100dvh - 24px);
+            padding: 20px;
+            border-radius: 28px;
+            background: linear-gradient(180deg, #fff, #fffafb);
+            box-shadow: 0 24px 56px rgba(52, 33, 43, 0.18);
+        }
+        body.dark .modal-content.detail-modal {
+            background: linear-gradient(180deg, #241d23, #1b151a);
+            box-shadow: 0 24px 56px rgba(0,0,0,0.42);
+        }
+        .detail-modal .modal-header {
+            margin-bottom: 12px;
+        }
+        .detail-modal .modal-header h3 {
+            font-size: 24px;
+        }
+        .detail-modal .modal-header .close-btn {
+            width: 34px;
+            height: 34px;
+            font-size: 17px;
+        }
+        .detail-modal .detail-img-area {
+            width: 100%;
+            height: min(44vh, 300px);
+            flex: 0 0 min(44vh, 300px);
+            border-radius: 22px;
+            margin-bottom: 14px;
+            background: linear-gradient(145deg, #fff4f9, #f7f4f6);
+            box-shadow:
+                0 12px 28px rgba(52, 33, 43, 0.10),
+                inset 0 1px 0 rgba(255,255,255,0.88);
+        }
+        body.dark .detail-modal .detail-img-area {
+            background: #171216;
+            box-shadow: none;
+        }
+        .detail-modal .detail-img-area img {
+            border-radius: inherit;
+            object-fit: cover;
+        }
+        .detail-modal .detail-title {
+            margin-bottom: 12px;
+            font-size: 22px;
+            font-weight: 900;
+            color: #20191d;
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .detail-modal .detail-list {
+            gap: 10px;
+            overflow-y: auto;
+            padding-right: 1px;
+        }
+        .detail-modal .detail-list li {
+            min-height: 48px;
+            padding: 10px 11px;
+            border-radius: 16px;
+            border-color: #f1e0e8;
+            background: #fff;
+            box-shadow: 0 4px 14px rgba(255, 105, 180, 0.06);
+            font-size: 13px;
+        }
+        body.dark .detail-modal .detail-list li {
+            background: #171216;
+            border-color: #332a31;
+            box-shadow: none;
+        }
+        .detail-modal .detail-list li .icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff0f6;
+            color: #ff69b4;
+            font-size: 12px;
+        }
+        body.dark .detail-modal .detail-list li .icon {
+            background: #382332;
+            color: #ff8bc8;
+        }
+        .detail-modal .detail-list li .label {
+            font-size: 12px;
+            color: #9b8f96;
+        }
+        .detail-modal .detail-list li .value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2b2428;
+        }
+        .detail-modal .payment-chip {
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+        .detail-modal .detail-actions {
+            position: sticky;
+            bottom: -20px;
+            margin: 12px -2px 0;
+            padding-top: 10px;
+            background: linear-gradient(180deg, rgba(255,255,255,0), #fff 38%);
+        }
+        body.dark .detail-modal .detail-actions {
+            background: linear-gradient(180deg, rgba(36,29,35,0), #241d23 38%);
+        }
+        .detail-modal .detail-actions button {
+            min-height: 46px;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+        @media (max-width: 400px) {
+            .modal-content.detail-modal {
+                width: min(100%, 392px);
+                padding: 18px 16px 16px;
+                border-radius: 24px;
+            }
+            .detail-modal .detail-img-area {
+                height: min(38vh, 260px);
+                flex-basis: min(38vh, 260px);
+                border-radius: 20px;
+            }
+            .detail-modal .detail-title {
+                font-size: 21px;
+            }
+            .detail-modal .detail-list {
+                gap: 8px;
+            }
+            .detail-modal .detail-list li {
+                min-height: 44px;
+                padding: 9px 10px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1877,11 +2039,27 @@
                     </div>
                 </div>
             </div>
-            <div class="form-row two-col">
+            <div class="form-row single-row name-row">
                 <div class="form-group">
                     <label>商品名称 *</label>
                     <input type="text" id="formName" required placeholder="输入商品名称">
                 </div>
+            </div>
+            <div class="form-row single-row platform-row">
+                <div class="form-group">
+                    <label>购买平台</label>
+                    <input type="hidden" id="formPlatform" value="">
+                    <select id="formPlatformSelect" onchange="handlePlatformSelectChange()">
+                        <option value="">选择</option>
+                        <option value="淘宝">淘宝</option>
+                        <option value="京东">京东</option>
+                        <option value="微信群">微信群</option>
+                        <option value="__custom__">自定义</option>
+                    </select>
+                    <input class="platform-custom-input" type="text" id="formPlatformCustom" placeholder="输入平台" oninput="syncPlatformValue()">
+                </div>
+            </div>
+            <div class="form-row two-col">
                 <div class="form-group">
                     <label>品牌</label>
                     <input type="hidden" id="formBrand" value="">
@@ -1896,20 +2074,6 @@
                         <option value="__custom__">自定义</option>
                     </select>
                     <input class="brand-custom-input" type="text" id="formBrandCustom" placeholder="输入品牌" oninput="syncBrandValue()">
-                </div>
-            </div>
-            <div class="form-row two-col">
-                <div class="form-group">
-                    <label>购买平台</label>
-                    <input type="hidden" id="formPlatform" value="">
-                    <select id="formPlatformSelect" onchange="handlePlatformSelectChange()">
-                        <option value="">选择</option>
-                        <option value="淘宝">淘宝</option>
-                        <option value="京东">京东</option>
-                        <option value="微信群">微信群</option>
-                        <option value="__custom__">自定义</option>
-                    </select>
-                    <input class="platform-custom-input" type="text" id="formPlatformCustom" placeholder="输入平台" oninput="syncPlatformValue()">
                 </div>
                 <div class="form-group">
                     <label>购买日期</label>
@@ -2032,7 +2196,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-form-modal-polish';
+    const APP_VERSION = '20260728-v1-form-detail-polish';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
