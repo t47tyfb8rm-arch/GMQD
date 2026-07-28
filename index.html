@@ -1793,7 +1793,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-fast-delete';
+    const APP_VERSION = '20260728-v1-delete-post-fix';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1813,7 +1813,14 @@
         });
         if (!response.ok) {
             const text = await response.text();
-            throw new Error(text || `请求失败：${response.status}`);
+            let message = text || `请求失败：${response.status}`;
+            try {
+                const parsed = JSON.parse(text);
+                message = parsed.detail || parsed.message || message;
+            } catch (error) {
+                // Keep the raw server text when it is not JSON.
+            }
+            throw new Error(message);
         }
         if (response.status === 204) return null;
         return response.json();
@@ -2637,12 +2644,15 @@
                 deleteBtn.textContent = '删除中...';
             }
             try {
-                await apiRequest(`/api/records/${deleteId}`, { method: 'DELETE' });
+                await apiRequest('/api/records/delete', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: Number(deleteId) }),
+                });
                 records = records.filter(r => String(r.id) !== String(deleteId));
                 closeDetailModal();
                 renderGrid();
             } catch (error) {
-                alert('从数据库删除失败，请检查后端服务。');
+                alert(`从数据库删除失败：${error.message || '请检查后端服务。'}`);
                 console.error(error);
             } finally {
                 if (deleteBtn) {
