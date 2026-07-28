@@ -85,6 +85,13 @@ def row_to_record(row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
+def row_to_summary(row: sqlite3.Row) -> dict[str, Any]:
+    record = row_to_record(row)
+    record["imageData"] = ""
+    record["hasImage"] = bool(row["image_data"] or "")
+    return record
+
+
 def execute_write(sql: str, params: tuple[Any, ...]) -> int:
     with connect() as conn:
         cur = conn.execute(sql, params)
@@ -182,6 +189,23 @@ def list_records() -> list[dict[str, Any]]:
     with connect() as conn:
         rows = conn.execute("SELECT * FROM records ORDER BY sort_order ASC, id DESC").fetchall()
     return [row_to_record(row) for row in rows]
+
+
+@app.get("/api/records/summary")
+def list_record_summaries() -> list[dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT id, name, brand, platform, order_no, payment_type, has_shipping,
+                   price, deposit_amount, balance_amount, shipping_amount,
+                   payment_details, quantity, status, purchase_date, note,
+                   CASE WHEN image_data != '' THEN '1' ELSE '' END AS image_data,
+                   sort_order, created_at, updated_at
+            FROM records
+            ORDER BY sort_order ASC, id DESC
+            """
+        ).fetchall()
+    return [row_to_summary(row) for row in rows]
 
 
 @app.post("/api/records")
