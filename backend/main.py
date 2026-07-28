@@ -216,7 +216,7 @@ def list_records() -> list[dict[str, Any]]:
 def list_record_summaries() -> list[dict[str, Any]]:
     with connect() as conn:
         first_rows = conn.execute(
-            "SELECT * FROM records ORDER BY sort_order ASC, id DESC LIMIT 9"
+            "SELECT * FROM records ORDER BY sort_order ASC, id DESC LIMIT 12"
         ).fetchall()
         first_ids = [row["id"] for row in first_rows]
         if first_ids:
