@@ -40,6 +40,10 @@ class SortIn(BaseModel):
     ids: list[int]
 
 
+class DeleteIn(BaseModel):
+    id: int
+
+
 app = FastAPI(title="GMQD 购物清单")
 
 
@@ -322,14 +326,23 @@ def update_record(record_id: int, record: RecordIn) -> dict[str, Any]:
     return get_record(record_id)
 
 
-@app.delete("/api/records/{record_id}")
-def delete_record(record_id: int) -> dict[str, Any]:
+def delete_record_by_id(record_id: int) -> dict[str, Any]:
     with connect() as conn:
         cur = conn.execute("DELETE FROM records WHERE id = ?", (record_id,))
         conn.commit()
     if cur.rowcount == 0:
         raise HTTPException(status_code=404, detail="Record not found")
     return {"ok": True}
+
+
+@app.post("/api/records/delete")
+def delete_record_post(payload: DeleteIn) -> dict[str, Any]:
+    return delete_record_by_id(payload.id)
+
+
+@app.delete("/api/records/{record_id}")
+def delete_record(record_id: int) -> dict[str, Any]:
+    return delete_record_by_id(record_id)
 
 
 @app.put("/api/records/sort")
