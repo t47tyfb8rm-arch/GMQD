@@ -1819,7 +1819,7 @@
 
 <script>
     // ===== 数据管理 =====
-    const APP_VERSION = '20260728-v1-inline-first-twelve';
+    const APP_VERSION = '20260728-v1-filtered-total-fix';
     const BRAND_OPTIONS = ['梨涡', '小满', '圆点', '娃丽比', '澳泷哩', 'balabala'];
     const PLATFORM_OPTIONS = ['淘宝', '京东', '微信群'];
     const API_BASE = '';
@@ -1892,10 +1892,10 @@
         return records.filter(r => r.status === currentFilter);
     }
 
-    function updateStats() {
-        const total = records.length;
-        const totalPrice = records.reduce((s, r) => s + totalAmount(r), 0);
-        document.getElementById('totalCount').textContent = `已收录 ${total}`;
+    function updateStats(scopeRecords = getFilteredRecords()) {
+        const total = scopeRecords.length;
+        const totalPrice = scopeRecords.reduce((s, r) => s + totalAmount(r), 0);
+        document.getElementById('totalCount').textContent = currentFilter ? `${currentFilter} ${total}` : `已收录 ${total}`;
         document.getElementById('totalPrice').textContent = `总价 ¥${totalPrice.toFixed(2)}`;
     }
 
@@ -1903,7 +1903,7 @@
     function renderGrid() {
         const grid = document.getElementById('productGrid');
         const filtered = getFilteredRecords();
-        updateStats();
+        updateStats(filtered);
 
         if (filtered.length === 0) {
             grid.innerHTML = `<div class="empty-state"><div class="empty-icon"></div><div class="empty-text">衣柜还是空空的</div><div class="empty-subtext">点右下角 + 收进第一件小衣服</div></div>`;
@@ -1938,6 +1938,8 @@
     }
 
     function totalAmount(record) {
+        const itemTotal = normalizePaymentItems(record).reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        if (itemTotal > 0) return itemTotal;
         const partsTotal = Number(record.depositAmount || 0) + Number(record.balanceAmount || 0) + Number(record.shippingAmount || 0);
         return partsTotal || Number(record.totalAmount || record.price || 0);
     }
